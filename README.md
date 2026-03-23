@@ -1,6 +1,6 @@
 # ÆRIS - Advanced Educational RISC-V Interactive Simulator
 
-![GitHub repo size](https://img.shields.io/github/repo-size/edusrc/aeris?label=Repo%20Size)
+![GitHub repo size](https://img.shields.io/github/repo-size/xarc/aeris?label=Repo%20Size)
 
 This project is a RISC-V processor implemented in Typescript using Angular, allowing the execution of RISC-V assembly code from the RV32I instruction set. It was developed with the aim of providing an affordable implementation, allowing students, enthusiasts and developers to experiment and learn about this popular processor architecture.
 
@@ -17,7 +17,7 @@ Before you begin, make sure you have the following tools installed:
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/edusrc/aeris.git
+git clone https://github.com/xarc/aeris.git
 cd aeris
 ```
 
