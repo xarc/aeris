@@ -1,0 +1,74 @@
+<div class="button-bar">
+  <div class="button-card">
+    <div class="button-group">
+      <button
+        (click)="resetFreshState()"
+        [disabled]="!(canDownload$ | async)"
+        matTooltip="New Program"
+      >
+        <mat-icon><img class="logo" src="assets/icons/new-file1.svg" /></mat-icon>
+      </button>
+
+      <input type="file" #fileInput hidden accept=".asm" (change)="onFileSelected($event)" />
+
+      <button (click)="fileInput.click()" [disabled]="!(canOpen$ | async)" matTooltip="Open File">
+        <mat-icon><img class="logo" src="assets/icons/open-archive.svg" /></mat-icon>
+      </button>
+
+      <button
+        (click)="downloadFile()"
+        [disabled]="!(canDownload$ | async)"
+        matTooltip="Download File"
+      >
+        <mat-icon><img class="logo" src="assets/icons/download-archive.svg" /></mat-icon>
+      </button>
+
+      <button (click)="dumpFile()" [disabled]="!(canDump$ | async)" matTooltip="Dump File">
+        <mat-icon><img class="logo" src="assets/icons/dump.svg" /></mat-icon>
+      </button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="button-group">
+      <button
+        (click)="assembleCode()"
+        [disabled]="!(canAssemble$ | async)"
+        matTooltip="Assemble Code"
+      >
+        <mat-icon><img class="logo" src="assets/icons/assembly.svg" /></mat-icon>
+      </button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="button-group">
+      <button (click)="runEntireProgram()" [disabled]="!(canRun$ | async)" matTooltip="Run">
+        <mat-icon><img class="logo" src="assets/icons/execute.svg" /></mat-icon>
+      </button>
+
+      <button (click)="runOneStep()" [disabled]="!(canStep$ | async)" matTooltip="Run One Step">
+        <mat-icon><img class="logo" src="assets/icons/redo.svg" /></mat-icon>
+      </button>
+
+      <button (click)="undoLastStep()" [disabled]="!(canUndo$ | async)" matTooltip="Undo Last Step">
+        <mat-icon><img class="logo" src="assets/icons/undo.svg" /></mat-icon>
+      </button>
+
+      <button (click)="resetAll()" [disabled]="!(canReset$ | async)" matTooltip="Reset">
+        <mat-icon><img class="logo" src="assets/icons/reset.svg" /></mat-icon>
+      </button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="button-group">
+      <button (click)="openSettings()" matTooltip="Settings">
+        <mat-icon><img class="logo" src="assets/icons/settings.svg" /></mat-icon>
+      </button>
+      <button (click)="help()" matTooltip="Help">
+        <mat-icon><img class="logo" src="assets/icons/help.svg" /></mat-icon>
+      </button>
+    </div>
+  </div>
+</div>

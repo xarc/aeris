@@ -1,0 +1,226 @@
+<div class="overlay">
+  <div class="dialog" (click)="$event.stopPropagation()">
+    <app-dialog-header
+      icon="settings"
+      title="Settings"
+      description="Customize your simulator"
+      (close)="closeDialog()"
+    ></app-dialog-header>
+
+    <div class="dialog-body">
+      <aside class="sidebar">
+        <button
+          class="nav-btn"
+          [class.active]="activeTab === 'editor'"
+          (click)="switchTab('editor')"
+        >
+          <mat-icon class="nav-ico">code_blocks</mat-icon>
+          <span class="nav-text">Editor</span>
+        </button>
+        <button class="nav-btn" [class.active]="activeTab === 'about'" (click)="switchTab('about')">
+          <mat-icon class="nav-ico">info_outline</mat-icon>
+          <span class="nav-text">About</span>
+        </button>
+      </aside>
+
+      <div class="content-area">
+        <div class="tab-panel" [class.active]="activeTab === 'editor'">
+          <div class="section-group">
+            <span class="section-label">Theme</span>
+
+            <div class="setting-row">
+              <div class="setting-label">
+                <span class="name">Simulator theme</span>
+                <span class="desc">Choose how the interface appears</span>
+              </div>
+
+              <div class="setting-control">
+                <app-select
+                  [options]="themeOptions"
+                  [(value)]="selectedTheme"
+                  width="100px"
+                  (valueChange)="onThemeChange($event)"
+                ></app-select>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-group">
+            <span class="section-label">Editor</span>
+
+            <div class="setting-row">
+              <div class="setting-label">
+                <span class="name">Autosave</span>
+                <span class="desc">Automatically save files while editing</span>
+              </div>
+
+              <div class="setting-control">
+                <app-checkbox
+                  [checked]="autosave"
+                  (checkedChange)="onAutosaveChange($event)"
+                ></app-checkbox>
+              </div>
+            </div>
+          </div>
+
+          <!-- <div class="section-group">
+            <span class="section-label">Selector</span>
+
+            <div class="setting-row">
+              <div class="setting-label">
+                <span class="name">Tamanho da fonte</span>
+                <span class="desc">Define o tamanho da fonte do editor</span>
+              </div>
+              <div class="setting-control">
+                <app-select
+                  [options]="selectorOptions"
+                  [(value)]="selectorTest"
+                  width="100px"
+                  (valueChange)="onSelectorTestChange($event)"
+                ></app-select>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-group">
+            <span class="section-label">Toggle</span>
+
+            <div class="setting-row">
+              <div class="setting-label">
+                <span class="name">Word wrap</span>
+                <span class="desc">Quebra automática de linhas longas</span>
+              </div>
+              <div class="setting-control">
+                <app-toggle
+                  [checked]="wordWrap"
+                  (checkedChange)="onWordWrapChange($event)"
+                ></app-toggle>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-group">
+            <span class="section-label">Slider</span>
+
+            <div class="setting-row">
+              <div class="setting-label">
+                <span class="name">Tab size</span>
+                <span class="desc">Quantidade de espaços por tabulação</span>
+              </div>
+              <div class="setting-control">
+                <app-slider
+                  [min]="2"
+                  [max]="8"
+                  [step]="1"
+                  [value]="tabSize"
+                  (valueChange)="onTabSizeChange($event)"
+                ></app-slider>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-group">
+            <span class="section-label">Checkbox</span>
+
+            <div class="setting-row">
+              <div class="setting-label">
+                <span class="name">Checkbox Teste</span>
+                <span class="desc">Checkbox Teste</span>
+              </div>
+
+              <div class="setting-control">
+                <app-checkbox
+                  [checked]="checkboxTest"
+                  (checkedChange)="onCheckboxTestChange($event)"
+                ></app-checkbox>
+              </div>
+            </div>
+          </div> -->
+        </div>
+
+        <div class="tab-panel" [class.active]="activeTab === 'about'">
+          <div class="section-group">
+            <span class="section-label">Application</span>
+
+            <div class="card card--spaced">
+              <div class="about-header">
+                <div class="about-logo">Æ</div>
+
+                <div class="about-info">
+                  <!-- <h3>ÆRIS</h3> -->
+                  <span class="subtitle">Advanced Educational RISC-V Interactive Simulator</span>
+
+                  <div class="about-badges">
+                    <span class="badge badge-grey">v{{ version }}</span>
+                    <span class="badge badge-orange">RV32I</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- <div class="section-group">
+            <span class="section-label">Description</span>
+
+            <div class="card">
+              <p class="about-text">
+                Educational simulator for the RISC-V architecture (RV32I). Designed to support
+                computer architecture learning by visualizing instruction execution step by step.
+              </p>
+            </div>
+          </div> -->
+
+          <div class="section-group">
+            <span class="section-label">Links</span>
+
+            <a
+              href="https://github.com/edusrc/aeris"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="card card--interactive link-row"
+            >
+              <span class="link-name">GitHub Repository</span>
+              <span class="link-desc">Source code and documentation</span>
+            </a>
+
+            <a
+              href="https://docs.riscv.org/reference/isa/unpriv/rv32.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="card card--interactive link-row"
+            >
+              <span class="link-name">RISC-V Specification</span>
+              <span class="link-desc">Official RV32I documentation</span>
+            </a>
+          </div>
+
+          <div class="section-group">
+            <span class="section-label">Credits</span>
+
+            <div class="card">
+              <p class="credits-text">
+                Developed by
+                <a
+                  href="https://www.linkedin.com/in/eduardomichell/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="credits-link"
+                >
+                  Eduardo Souza
+                </a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="dialog-footer">
+      <!-- <button class="btn-reset" (click)="resetSettings()">Reset to defaults</button> -->
+      <div class="footer-actions">
+        <button class="btn-cancel" (click)="closeDialog()">Cancel</button>
+        <button class="btn-save" (click)="saveSettings()">Save Changes</button>
+      </div>
+    </footer>
+  </div>
+</div>

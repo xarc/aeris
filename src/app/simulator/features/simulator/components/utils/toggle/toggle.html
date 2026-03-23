@@ -1,0 +1,8 @@
+<button
+  type="button"
+  class="switch"
+  [class.on]="checked"
+  [class.disabled]="disabled"
+  (click)="toggle()"
+  aria-pressed="{{ checked }}"
+></button>

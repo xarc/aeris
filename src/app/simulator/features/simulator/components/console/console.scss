@@ -1,0 +1,176 @@
+@use 'colors' as *;
+@use 'fonts' as *;
+
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.console {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+
+  background: $s2;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.console-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+
+  font-size: 13px;
+  line-height: 1.6;
+
+  font-family: $font-console-monospace;
+  color: $t6;
+}
+
+.console-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.console-scroll::-webkit-scrollbar-thumb {
+  background: $s5;
+  border-radius: 3px;
+}
+
+.console-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 8px 12px;
+  border-top: 1px solid $s3;
+  background: $s2;
+}
+
+.prompt {
+  color: $p3;
+  font-size: 13px;
+  user-select: none;
+}
+
+.input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+
+  font-family: $font-console-monospace;
+  font-size: 13px;
+  color: $t6;
+
+  caret-color: $p3;
+}
+
+.input::placeholder {
+  color: $t4;
+}
+
+.status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 7px 12px;
+  border-top: 1px solid $s3;
+  background: $s2;
+
+  font-size: 11px;
+  color: $s7;
+}
+
+.status-bar .left {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.pc-value {
+  // color: $p4;
+}
+
+.badge {
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 600;
+  color: $s1;
+}
+
+.badge-idle {
+  background: $t4;
+}
+.badge-running {
+  background: $p3;
+}
+.badge-paused {
+  background: $p5;
+}
+.badge-halted {
+  background: $p4;
+}
+.badge-error {
+  background: $p6;
+}
+
+.text {
+  display: block;
+  white-space: pre-wrap;
+  word-break: break-word;
+
+  color: $t6;
+  font-family: $font-console-monospace;
+  line-height: 1.6;
+}
+
+.buttons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.clear-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 30px;
+  height: 22px;
+
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+
+  color: $s7;
+  cursor: pointer;
+
+  transition: all 0.15s ease;
+}
+
+.clear-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.clear-icon:hover {
+  background: rgba($p1-rgb, 0.12);
+  border-color: rgba($p1-rgb, 0.35);
+  color: $p3;
+
+  box-shadow:
+    0 0 0 1px rgba($p1-rgb, 0.4),
+    0 0 12px rgba(238, 98, 36, 0.25);
+}
+
+.clear-icon:active {
+  box-shadow:
+    0 0 0 1px rgba($p1-rgb, 0.45),
+    0 0 16px rgba(238, 98, 36, 0.35);
+}
