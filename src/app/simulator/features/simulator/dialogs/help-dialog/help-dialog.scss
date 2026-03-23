@@ -1,0 +1,433 @@
+@use 'colors' as *;
+@use 'fonts' as *;
+
+:host {
+  display: block;
+  max-height: 90vh;
+}
+
+:host ::ng-deep .mat-mdc-dialog-container,
+:host ::ng-deep .mat-mdc-dialog-surface,
+:host ::ng-deep .mat-mdc-dialog-content {
+  overflow: hidden !important;
+}
+
+:host ::ng-deep .mat-mdc-dialog-content {
+  padding: 0 !important;
+  max-height: unset !important;
+}
+
+.help-shell {
+  width: 900px;
+  max-width: 95vw;
+  height: clamp(480px, 86vh, 760px);
+  background: $s1;
+  color: $t6;
+
+  display: flex;
+  flex-direction: column;
+
+  border-radius: 12px;
+  border: 1px solid $s4;
+  overflow: hidden;
+}
+
+.help-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 16px 20px;
+  background: $s1;
+  border-bottom: 1px solid $s3;
+}
+
+.help-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.help-icon-box {
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 8px;
+  background: rgba($p1-rgb, 0.15);
+  color: $p3;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.header-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-text h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: $t6;
+}
+
+.header-text p {
+  margin: 2px 0 0;
+  font-size: 11px;
+  line-height: 1.3;
+  color: $s7;
+  font-family: $font-mono-ui;
+}
+
+.help-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: $s7;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    background: $s3;
+    color: $t6;
+  }
+}
+
+.help-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.help-sidebar {
+  width: 200px;
+  background: $s1;
+  border-right: 1px solid $s3;
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-label {
+  padding: 0 12px 0px 20px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: $s5;
+  font-family: $font-mono-ui;
+}
+
+.sidebar-nav {
+  padding: 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 100%;
+  overflow-y: auto;
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid transparent;
+
+  color: $s7;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+
+  &:hover {
+    background: $s2;
+    color: $t5;
+    box-shadow:
+      0 0 0 1px rgba($s4-rgb, 0.25),
+      0 0 10px rgba($s4-rgb, 0.15);
+  }
+
+  &:active {
+    transform: scale(0.985);
+  }
+
+  &.active {
+    background: rgba($p1-rgb, 0.1);
+    color: $p3;
+    border-color: rgba($p1-rgb, 0.35);
+
+    box-shadow:
+      0 0 0 1px rgba($p1-rgb, 0.4),
+      0 0 14px rgba($p2-rgb, 0.3);
+  }
+
+  &.active:hover {
+    box-shadow:
+      0 0 0 1px rgba($p1-rgb, 0.45),
+      0 0 16px rgba($p2-rgb, 0.35);
+  }
+}
+
+.nav-ico {
+  color: $s5;
+}
+
+.nav-btn.active .nav-ico {
+  color: $p1;
+}
+
+.nav-text {
+  font-family: $font-mono-ui;
+}
+
+.nav-count {
+  margin-left: auto;
+  font-size: 12px;
+  font-family: $font-mono-ui;
+  color: $s5;
+}
+
+.nav-btn.active .nav-count {
+  color: rgba($p1-rgb, 0.6);
+}
+
+.sidebar-tip {
+  margin-top: auto;
+  border-top: 1px solid $s3;
+}
+
+.sidebar-github {
+  padding: 16px 8px;
+  display: flex;
+  justify-content: center;
+}
+
+.github-link {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+
+  padding: 14px 18px;
+  border-radius: 12px;
+
+  text-decoration: none;
+  color: $s7;
+
+  background: transparent;
+  border: 1px solid transparent;
+}
+
+.github-link::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 14px;
+  background: radial-gradient(circle at center, rgba($p2-rgb, 0.25), transparent 65%);
+  opacity: 0;
+  filter: blur(12px);
+  transition: opacity 0.25s ease;
+  z-index: -1;
+}
+
+.github-link:hover {
+  color: $p3;
+  transform: translateY(-2px);
+}
+
+.github-link:hover::before {
+  opacity: 1;
+}
+
+.github-link:active {
+  transform: translateY(0) scale(0.985);
+}
+
+.github-icon {
+ font-size: 40px;
+  width: 40px;
+  height: 40px;
+}
+
+.github-link:hover .github-icon {
+  transform: scale(1.08);
+  filter: drop-shadow(0 0 12px rgba($p2-rgb 0.3));
+}
+
+.github-text {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: opacity 0.2s ease;
+  font-family: $font-mono-ui;
+}
+
+.github-link:focus-visible {
+  outline: none;
+  border-color: rgba($p1-rgb, 0.6);
+  box-shadow:
+    0 0 0 2px rgba($p1-rgb, 0.15),
+    0 0 16px rgba($p2-rgb, 0.3);
+}
+
+.help-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.search-area {
+  padding: 12px 20px;
+  border-bottom: 1px solid $s3;
+}
+
+.search-wrap {
+  position: relative;
+}
+
+.search-ico {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: $s5;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.svg-icon-size {
+  width: 45px;
+}
+
+.search-input {
+  width: 90%;
+  height: 36px;
+  padding: 0 36px 0 40px;
+
+  border-radius: 8px;
+  border: 1px solid $s3;
+  background: $s2;
+  color: $t6;
+  font-family: $font-mono-ui;
+  font-size: 13px;
+
+  &:focus {
+    border-color: rgba($p1-rgb, 0.5);
+    box-shadow: 0 0 0 2px rgba($p1-rgb, 0.15);
+    outline: none;
+  }
+}
+
+.clear-search {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: $s5;
+  cursor: pointer;
+}
+
+.search-desc {
+  margin-top: 8px;
+  font-size: 12px;
+  color: $s7;
+  line-height: 1.5;
+
+  display: flex;
+  align-items: center;
+  font-family: $font-mono-ui;
+}
+
+.search-count {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 500;
+  color: $p3;
+  font-family: $font-mono-ui;
+}
+
+.card-list {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card {
+  padding: 12px;
+  border-radius: 8px;
+  background: $s2;
+  border: 1px solid rgba($s4-rgb, 0.6);
+  font-family: $font-mono-ui;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+
+  &:hover {
+    background: $t3;
+    border-color: rgba($p1-rgb, 0.4);
+  }
+}
+
+.card-name {
+  font-family: $font-mono-code;
+  font-size: 13px;
+  color: $p7;
+  background: $s1;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.card-desc {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: $t5;
+}
+
+.empty-state {
+  padding: 64px 0;
+  text-align: center;
+  color: $s5;
+}
+
+@media (max-width: 640px) {
+  .help-sidebar {
+    display: none;
+  }
+}

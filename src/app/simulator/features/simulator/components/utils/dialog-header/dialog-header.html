@@ -1,0 +1,16 @@
+<header class="help-header">
+  <div class="help-header-left">
+    <div class="help-icon-box" aria-hidden="true">
+      <img class="dialog-icon" [src]="icons[icon]" alt="" />
+    </div>
+
+    <div class="header-text">
+      <h2>{{ title }}</h2>
+      <p>{{ description }}</p>
+    </div>
+  </div>
+
+  <button class="help-close" type="button" (click)="close.emit()" aria-label="Close">
+    <img src="assets/icons/close.svg" alt="" />
+  </button>
+</header>

@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/app",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "types": []
+  },
+  "include": ["src/**/*.ts", "src/app/simulator/core/domain/analyzer/parser/Parser.ts"],
+  "exclude": ["src/**/*.spec.ts"]
+}
