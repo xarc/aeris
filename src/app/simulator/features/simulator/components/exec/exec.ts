@@ -47,9 +47,6 @@ export class Exec implements OnDestroy {
 
   rowIndex = -1;
 
-  page = 0;
-  control = 0;
-
   memoryTypes = [
     { init: ConstantsInit.DATA_MEM_INIT, name: '.data' },
     { init: 0x10040000, name: 'heap' },
@@ -59,6 +56,9 @@ export class Exec implements OnDestroy {
   ];
 
   memoryType = this.memoryTypes[0];
+
+  page = 0;
+  control = this.memoryType.init;
 
   simulation: SimulatorStateObject | null = null;
 
