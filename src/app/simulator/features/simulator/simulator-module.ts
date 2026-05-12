@@ -16,6 +16,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTabsModule } from '@angular/material/tabs';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { Runtime } from './components/runtime/runtime';
 import { monacoConfig } from '../../core/monaco/monaco.config';
 import { MonacoEditorModule, provideMonacoEditor } from 'ngx-monaco-editor-v2';
@@ -54,6 +55,7 @@ import { Slider } from './components/utils/slider/slider';
     MatIconModule,
     MatDialogModule,
     MatTabsModule,
+    MatTooltipModule,
     MonacoEditorModule.forRoot(monacoConfig),
     AdaptersModule,
   ],

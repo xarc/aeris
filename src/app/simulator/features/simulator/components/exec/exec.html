@@ -87,16 +87,16 @@
           <table class="data-segment-table">
             <tbody class="data-segment-body">
               @for (row of getDataSegment(); track row.address) {
-                <tr>
+                <tr [id]="'row-data-' + row.address">
                   <td>{{ getHexAddresses(row.address) }}</td>
-                  <td>{{ getHexValues(row.value0) }}</td>
-                  <td>{{ getHexValues(row.value4) }}</td>
-                  <td>{{ getHexValues(row.value8) }}</td>
-                  <td>{{ getHexValues(row.value12) }}</td>
-                  <td>{{ getHexValues(row.value16) }}</td>
-                  <td>{{ getHexValues(row.value20) }}</td>
-                  <td>{{ getHexValues(row.value24) }}</td>
-                  <td>{{ getHexValues(row.value28) }}</td>
+                  <td [class.selected-row]="isDataCellSelected(row, 0)">{{ getHexValues(row.value0) }}</td>
+                  <td [class.selected-row]="isDataCellSelected(row, 4)">{{ getHexValues(row.value4) }}</td>
+                  <td [class.selected-row]="isDataCellSelected(row, 8)">{{ getHexValues(row.value8) }}</td>
+                  <td [class.selected-row]="isDataCellSelected(row, 12)">{{ getHexValues(row.value12) }}</td>
+                  <td [class.selected-row]="isDataCellSelected(row, 16)">{{ getHexValues(row.value16) }}</td>
+                  <td [class.selected-row]="isDataCellSelected(row, 20)">{{ getHexValues(row.value20) }}</td>
+                  <td [class.selected-row]="isDataCellSelected(row, 24)">{{ getHexValues(row.value24) }}</td>
+                  <td [class.selected-row]="isDataCellSelected(row, 28)">{{ getHexValues(row.value28) }}</td>
                 </tr>
                 @if (row.address !== lastDataRowAddr) {
                   <tr>
