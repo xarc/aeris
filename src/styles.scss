@@ -44,3 +44,15 @@ body {
 :root {
   --s3: $s3;
 }
+
+.mdc-tooltip__surface {
+  background-color: var(--s1) !important;
+  color: var(--t7) !important;
+  font-family: 'Lato', sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  border-radius: 6px !important;
+  padding: 6px 10px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+  letter-spacing: 0.2px !important;
+}

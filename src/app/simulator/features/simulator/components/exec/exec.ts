@@ -61,10 +61,19 @@ export class Exec implements OnDestroy {
   control = this.memoryType.init;
 
   simulation: SimulatorStateObject | null = null;
+  lastWrittenMemoryAddress: number | null = null;
 
   constructor(private readonly store: SimulatorStore) {
     this.store.state$.subscribe((state) => {
       this.simulation = state.simulation;
+
+      const writtenAddr = state.simulation?.riscv?.lastMutation?.writtenMemoryAddress ?? null;
+      this.lastWrittenMemoryAddress = writtenAddr;
+
+      if (writtenAddr !== null) {
+        this.navigateToWrittenAddress(writtenAddr);
+      }
+
       const pc = state.simulation?.riscv?.pc;
 
       if (pc != null && pc !== this.lastPc) {
@@ -143,6 +152,49 @@ export class Exec implements OnDestroy {
       return 0;
     }
     return simulation.riscv.memory[address] ?? 0;
+  }
+
+  private navigateToWrittenAddress(address: number): void {
+    let best = this.memoryTypes[0];
+    let bestDist = Math.abs(address - best.init);
+
+    for (const mt of this.memoryTypes) {
+      const dist = Math.abs(address - mt.init);
+
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = mt;
+      }
+    }
+
+    this.memoryType = best;
+    this.page = Math.floor((address - best.init) / 256);
+    this.control = best.init + this.page * 256;
+
+    const startAddress = this.memoryType.init + this.page * 256;
+    const rowAddress = Math.floor((address - startAddress) / 32) * 32 + startAddress;
+
+    setTimeout(() => {
+      this.scrollToDataRow(rowAddress);
+    });
+  }
+
+  private scrollToDataRow(rowAddress: number): void {
+    const element = document.getElementById('row-data-' + rowAddress);
+
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+    }
+  }
+
+  isDataCellSelected(row: DataRow, offset: number): boolean {
+    if (this.lastWrittenMemoryAddress === null) {
+      return false;
+    }
+    return (
+      this.lastWrittenMemoryAddress >= row.address + offset &&
+      this.lastWrittenMemoryAddress < row.address + offset + 4
+    );
   }
 
   get lastDataRowAddr(): number {
