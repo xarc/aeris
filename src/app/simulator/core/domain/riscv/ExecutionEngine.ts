@@ -30,7 +30,12 @@ export class ExecutionEngine {
     if (mutation.isSyscall) {
       const syscallCode = registers.read(17); // a7
 
-      const domainResult = SyscallHandler.handle(syscallCode, registers, memory, state.analysis.data);
+      const domainResult = SyscallHandler.handle(
+        syscallCode,
+        registers,
+        memory,
+        state.analysis.data,
+      );
 
       const adapterResult = await syscallPort.execute(domainResult.effect);
 
@@ -42,6 +47,19 @@ export class ExecutionEngine {
         }
       }
 
+      if (domainResult.effect.kind === 'exit') {
+        return {
+          ...state,
+          riscv: {
+            pc: pc.get(),
+            registers: registers.toObject(),
+            memory: memory.toRecord(),
+            lastMutation: mutation,
+            halted: true,
+          },
+        };
+      }
+
       if (
         domainResult.effect.kind === 'read' &&
         domainResult.effect.type === 'string' &&
@@ -51,8 +69,8 @@ export class ExecutionEngine {
 
         const trimmed = adapterResult.input.slice(0, maxLength - 1);
 
-        for (let i = 0; i < trimmed.length; i++) {
-          memory.writeU8(address + i, trimmed.charCodeAt(i));
+        for (let index = 0; index < trimmed.length; index++) {
+          memory.writeU8(address + index, trimmed.charCodeAt(index));
         }
 
         memory.writeU8(address + trimmed.length, 0);

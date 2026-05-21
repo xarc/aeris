@@ -403,7 +403,7 @@ export class HelpDialog {
   ];
 
   get currentTab() {
-    return this.tabs.find((t) => t.key === this.activeTab)!;
+    return this.tabs.find((tab) => tab.key === this.activeTab)!;
   }
 
   get filteredData() {
@@ -415,7 +415,8 @@ export class HelpDialog {
     }
 
     return data.filter(
-      (i) => i.name.toLowerCase().includes(search) || i.desc.toLowerCase().includes(search),
+      (item) =>
+        item.name.toLowerCase().includes(search) || item.desc.toLowerCase().includes(search),
     );
   }
 
@@ -438,7 +439,7 @@ export class HelpDialog {
   getDataForTab(key: TabKey) {
     return this.getDataMap()[key] ?? [];
   }
-  
+
   selectTab(tab: TabKey) {
     this.activeTab = tab;
     this.search = '';

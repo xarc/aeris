@@ -13,7 +13,9 @@ export class Toggle {
   @Output() checkedChange = new EventEmitter<boolean>();
 
   toggle() {
-    if (this.disabled) return;
+    if (this.disabled) {
+      return;
+    }
 
     this.checked = !this.checked;
     this.checkedChange.emit(this.checked);

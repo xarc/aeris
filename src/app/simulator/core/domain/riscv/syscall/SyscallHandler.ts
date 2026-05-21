@@ -63,6 +63,11 @@ export class SyscallHandler {
         };
       }
 
+      case SyscallCode.Exit:
+        return {
+          effect: { kind: 'exit' },
+        };
+
       default:
         return {
           effect: { kind: 'none' },

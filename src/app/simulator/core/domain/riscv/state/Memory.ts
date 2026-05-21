@@ -1,4 +1,4 @@
-import { toInt32 } from "../../shared/utils";
+import { toInt32 } from '../../shared/utils';
 
 function getWordAddr(address: number): number {
   return address & ~3;
@@ -13,10 +13,10 @@ export class Memory {
 
   static fromRecord(rec: Record<number, number>): Memory {
     const memory = new Map<number, number>();
-    for (const [k, v] of Object.entries(rec)) {
-      const address = Number(k);
+    for (const [key, value] of Object.entries(rec)) {
+      const address = Number(key);
       if (Number.isFinite(address)) {
-        memory.set(address | 0, toInt32(v));
+        memory.set(address | 0, toInt32(value));
       }
     }
     return new Memory(memory);
@@ -24,8 +24,8 @@ export class Memory {
 
   toRecord(): Record<number, number> {
     const record: Record<number, number> = {};
-    for (const [k, v] of this.mem.entries()) {
-      record[k] = v | 0;
+    for (const [key, value] of this.mem.entries()) {
+      record[key] = value | 0;
     }
     return record;
   }

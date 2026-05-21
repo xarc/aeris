@@ -109,7 +109,7 @@ export const monacoConfig: NgxMonacoEditorConfig = {
         const wordUntil = model.getWordUntilPosition(position);
         const current = wordUntil?.word ?? '';
         const items = [...INSTRUCTIONS, ...REGISTERS]
-          .filter((x) => x.startsWith(current))
+          .filter((suggestion) => suggestion.startsWith(current))
           .map((label) => ({
             label,
             kind: monaco.languages.CompletionItemKind.Keyword,

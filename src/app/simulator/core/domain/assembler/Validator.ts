@@ -6,7 +6,9 @@ type InstructionRow = CodeAnalysis['text'][number];
 export class Validator {
   static validate(analysis: CodeAnalysis) {
     for (const instruction of analysis.text) {
-      if (instruction.isPseudo) continue;
+      if (instruction.isPseudo) {
+        continue;
+      }
 
       switch (instruction.opcode) {
         case 'add':
