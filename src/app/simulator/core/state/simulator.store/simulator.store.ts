@@ -197,7 +197,9 @@ export class SimulatorStore {
 
   public setPc(pc: number | null): void {
     const subject = this.subject.value;
-    if (!subject.assembly || pc == null) return;
+    if (!subject.assembly || pc == null) {
+      return;
+    }
 
     this.patch({
       assembly: {

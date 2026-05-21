@@ -26,8 +26,8 @@ export function binaryToDecimalSigned(binary: string) {
   const negative = binary[0] === '1';
   if (negative) {
     let inverse = '';
-    for (let i = 1; i < binary.length; i++) {
-      inverse += binary[i] === '0' ? '1' : '0';
+    for (let index = 1; index < binary.length; index++) {
+      inverse += binary[index] === '0' ? '1' : '0';
     }
     return (parseInt(inverse, 2) + 1) * -1;
   }
@@ -67,9 +67,9 @@ export function getFunct7(instruction: string) {
   return getBinaryRange(31, 25, instruction);
 }
 
-export function toInt32(n: number): number {
-  return n | 0;
+export function toInt32(value: number): number {
+  return value | 0;
 }
-export function toUint32(n: number): number {
-  return n >>> 0;
+export function toUint32(value: number): number {
+  return value >>> 0;
 }

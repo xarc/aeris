@@ -8,6 +8,7 @@ type TextRow = {
   code: string;
   basic: string;
   source: string;
+  isPseudo: boolean;
 };
 
 type DataRow = {
@@ -118,6 +119,7 @@ export class Exec implements OnDestroy {
         code: this.normalizeHex(instruction.machine?.hex ?? ''),
         basic: [...(instruction.operands ?? [])].join(' '),
         source: instruction.raw?.join(' ') ?? '',
+        isPseudo: instruction.isPseudo ?? false,
       });
     }
 
@@ -300,8 +302,8 @@ export class Exec implements OnDestroy {
     // }
 
     // MSB -> LSB (ao contrário)
-    for (let i = 3; i >= 0; i--) {
-      const byte = (word >> (i * 8)) & 0xff;
+    for (let index = 3; index >= 0; index--) {
+      const byte = (word >> (index * 8)) & 0xff;
       result += this.byteToAscii(byte) + ' ';
     }
 

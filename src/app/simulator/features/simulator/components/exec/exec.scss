@@ -293,6 +293,11 @@ select option {
   font-family: $font-memory-monospace;
 }
 
+.pseudo-row td {
+  color: $p3;
+  font-weight: 700;
+}
+
 .data-segment-table td {
   font-family: $font-memory-monospace;
 }
