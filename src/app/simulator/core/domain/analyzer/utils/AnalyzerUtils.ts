@@ -30,10 +30,17 @@ export function resolveRegToken(token?: string): string | undefined {
     return token;
   }
   if (token.startsWith('x') && /^\d+$/.test(token.slice(1))) {
+    const index = parseInt(token.slice(1), 10);
+    if (index < 0 || index > 31) {
+      throw new AnalysisError(`"${token}" is not a valid register`);
+    }
     return token;
   }
   const register = RegFile[token];
-  return register ? `x${register.value}` : token;
+  if (!register) {
+    throw new AnalysisError(`"${token}" is not a valid register`);
+  }
+  return `x${register.value}`;
 }
 
 export function parseMemToken(v: string): { imm: string; rs1: string } | null {

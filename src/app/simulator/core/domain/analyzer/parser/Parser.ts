@@ -5,18 +5,37 @@ export class Parser {
     const lines = source.split('\n');
     const instructionSource: InstructionSource[] = [];
 
-    for (let i = 0; i < lines.length; i++) {
-      const original = lines[i];
-      const lineNo = i + 1;
+    for (let index = 0; index < lines.length; index++) {
+      const original = lines[index];
+      const lineNo = index + 1;
 
       const noComments = this.stripComments(original);
       const trimmed = noComments.trim();
-      if (!trimmed) continue;
+      if (!trimmed) {
+        continue;
+      }
 
       const tokens = this.tokenize(trimmed);
-      if (tokens.length === 0) continue;
+      if (tokens.length === 0) {
+        continue;
+      }
 
       if ((tokens[0] === '.data' || tokens[0] === '.text') && tokens.length > 1) {
+        instructionSource.push({
+          raw: [tokens[0]],
+          line: lineNo,
+          text: tokens[0],
+        });
+
+        instructionSource.push({
+          raw: tokens.slice(1),
+          line: lineNo,
+          text: tokens.slice(1).join(' '),
+        });
+        continue;
+      }
+
+      if (tokens[0].endsWith(':') && tokens.length > 1) {
         instructionSource.push({
           raw: [tokens[0]],
           line: lineNo,
@@ -67,13 +86,13 @@ export class Parser {
 
   private stripComments(line: string): string {
     let inQuote = false;
-    for (let i = 0; i < line.length; i++) {
-      const c = line[i];
-      if (c === '"') {
+    for (let index = 0; index < line.length; index++) {
+      const char = line[index];
+      if (char === '"') {
         inQuote = !inQuote;
       }
-      if (!inQuote && c === '#') {
-        return line.slice(0, i);
+      if (!inQuote && char === '#') {
+        return line.slice(0, index);
       }
     }
     return line;
@@ -87,7 +106,7 @@ export class Parser {
 
     for (const match of matches) {
       if (!match.startsWith('"')) {
-        const parts = match.split(',').filter((x) => x.trim() !== '');
+        const parts = match.split(',').filter((token) => token.trim() !== '');
         tokens.push(...parts);
       } else {
         tokens.push(match);

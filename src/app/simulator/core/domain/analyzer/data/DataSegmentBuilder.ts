@@ -12,7 +12,7 @@ import { validateLabelToken } from '../utils/AnalyzerUtils';
 
 export class DataSegmentBuilder {
   private leftoverBytes: number[] = [];
-  
+
   build(lines: InstructionSource[]): DataSegment {
     const entries: DataEntry[] = [];
     let dataMemory = ConstantsInit.DATA_MEM_INIT;
@@ -39,8 +39,8 @@ export class DataSegmentBuilder {
 
       if (dataDirective === '.word' && this.leftoverBytes.length > 0) {
         let pad = 0;
-        for (let i = 0; i < this.leftoverBytes.length; i++) {
-          pad |= this.leftoverBytes[i] << (i * 8);
+        for (let index = 0; index < this.leftoverBytes.length; index++) {
+          pad |= this.leftoverBytes[index] << (index * 8);
         }
         entries[entries.length - 1].values.push(pad | 0);
         this.leftoverBytes = [];
@@ -61,8 +61,8 @@ export class DataSegmentBuilder {
 
     if (this.leftoverBytes.length > 0 && entries.length > 0) {
       let pad = 0;
-      for (let i = 0; i < this.leftoverBytes.length; i++) {
-        pad |= this.leftoverBytes[i] << (i * 8);
+      for (let index = 0; index < this.leftoverBytes.length; index++) {
+        pad |= this.leftoverBytes[index] << (index * 8);
       }
       entries[entries.length - 1].values.push(pad | 0);
       this.leftoverBytes = [];
@@ -113,12 +113,12 @@ export class DataSegmentBuilder {
       if (rawValues.length === 0) {
         return [];
       }
-      for (const v of rawValues) {
-        if (!/^-?\d+$/.test(v)) {
-          throw new AnalysisError(`"${v}" is not a valid integer number`, line);
+      for (const value of rawValues) {
+        if (!/^-?\d+$/.test(value)) {
+          throw new AnalysisError(`"${value}" is not a valid integer number`, line);
         }
       }
-      return rawValues.map((v) => this.normalize32(Number(v)));
+      return rawValues.map((value) => this.normalize32(Number(value)));
     }
 
     if (directive === '.ascii' || directive === '.string') {
@@ -187,17 +187,21 @@ export class DataSegmentBuilder {
 
     const bytes: number[] = [
       ...this.leftoverBytes,
-      ...Array.from(str).map((c) => c.charCodeAt(0) & 0xff),
+      ...Array.from(str).map((char) => char.charCodeAt(0) & 0xff),
     ];
 
-    let i = 0;
-    for (; i + 3 < bytes.length; i += 4) {
-      const word = bytes[i] | (bytes[i + 1] << 8) | (bytes[i + 2] << 16) | (bytes[i + 3] << 24);
+    let index = 0;
+    for (; index + 3 < bytes.length; index += 4) {
+      const word =
+        bytes[index] |
+        (bytes[index + 1] << 8) |
+        (bytes[index + 2] << 16) |
+        (bytes[index + 3] << 24);
 
       result.push(word | 0);
     }
 
-    this.leftoverBytes = bytes.slice(i);
+    this.leftoverBytes = bytes.slice(index);
 
     return result;
   }

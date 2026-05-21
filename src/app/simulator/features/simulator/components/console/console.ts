@@ -47,7 +47,7 @@ export class Console implements OnDestroy {
   ngOnDestroy(): void {
     this.allowInputSubscription?.unsubscribe();
   }
-  
+
   exportConsole(): void {
     const now = new Date();
 
@@ -61,10 +61,10 @@ export class Console implements OnDestroy {
 
     const url = window.URL.createObjectURL(blob);
 
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.click();
 
     window.URL.revokeObjectURL(url);
   }
@@ -75,7 +75,9 @@ export class Console implements OnDestroy {
 
   public getConsole(): string {
     const { entries } = this.consolePort.getSnapshot();
-    return entries.map((e) => this.formatConsoleLine(e.timestamp, e.level, e.message)).join('\n');
+    return entries
+      .map((entry) => this.formatConsoleLine(entry.timestamp, entry.level, entry.message))
+      .join('\n');
   }
 
   public clearConsole(): void {

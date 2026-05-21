@@ -10,6 +10,18 @@ import {
 const INITIAL_CONSOLE_STATE: ConsoleState = { entries: [], allowInput: false };
 const MAX_CONSOLE_ENTRIES = 5000;
 
+enum EscapeSequence {
+  Newline = 'n',
+  Tab = 't',
+  Backslash = '\\',
+}
+
+const ESCAPE_MAP: Record<string, string> = {
+  [EscapeSequence.Newline]: '\n',
+  [EscapeSequence.Tab]: '\t',
+  [EscapeSequence.Backslash]: '\\',
+};
+
 @Injectable({ providedIn: 'root' })
 export class MemoryConsoleAdapter extends ConsolePort {
   private readonly stateSubject = new BehaviorSubject<ConsoleState>(INITIAL_CONSOLE_STATE);
@@ -26,10 +38,20 @@ export class MemoryConsoleAdapter extends ConsolePort {
   }
 
   public print(message: string, level: ConsoleLevel = 'log'): void {
-    const newEntry: ConsoleEntry = { timestamp: Date.now(), level, message };
+    const text = message.replace(/\\(.)/g, (_, c) => ESCAPE_MAP[c] ?? `\\${c}`);
     const current = this.stateSubject.value;
-    const nextEntries = [...current.entries, newEntry].slice(-MAX_CONSOLE_ENTRIES);
-    this.stateSubject.next({ ...current, entries: nextEntries });
+    const entries = current.entries;
+    const last = entries[entries.length - 1];
+
+    if (last && last.level === level && level === 'system') {
+      const updated = { ...last, message: last.message + text };
+      const nextEntries = [...entries.slice(0, -1), updated].slice(-MAX_CONSOLE_ENTRIES);
+      this.stateSubject.next({ ...current, entries: nextEntries });
+    } else {
+      const newEntry: ConsoleEntry = { timestamp: Date.now(), level, message: text };
+      const nextEntries = [...entries, newEntry].slice(-MAX_CONSOLE_ENTRIES);
+      this.stateSubject.next({ ...current, entries: nextEntries });
+    }
   }
 
   public clear(): void {
