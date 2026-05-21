@@ -71,7 +71,7 @@ export class SimulatorFacade {
 
     this.store.reset();
     this.store.setSourceText(content);
-     this.console.print(`File loaded: ${file.name}`);
+    this.console.print(`File loaded: ${file.name}`);
   }
 
   reset(): void {
@@ -108,7 +108,9 @@ export class SimulatorFacade {
     });
 
     reference.afterClosed().subscribe((type) => {
-      if (!type) return;
+      if (!type) {
+        return;
+      }
 
       this.dumpUseCase.execute(type);
     });

@@ -40,7 +40,7 @@ export class RunProgramUseCase {
         if (!riscv) {
           break;
         }
-        if (riscv.pc < startPc || riscv.pc >= endPc) {
+        if (riscv.pc < startPc || riscv.pc >= endPc || riscv.halted) {
           break;
         }
 

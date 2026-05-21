@@ -1,5 +1,5 @@
 export type DecodedInstruction = {
-  raw: number;     
+  raw: number;
   opcode: number;
   rd: number;
   funct3: number;
@@ -9,14 +9,14 @@ export type DecodedInstruction = {
 };
 
 export function decode(inst: number): DecodedInstruction {
-  const u = inst >>> 0;
+  const unsigned = inst >>> 0;
   return {
-    raw: u,
-    opcode: u & 0x7f,
-    rd: (u >>> 7) & 0x1f,
-    funct3: (u >>> 12) & 0x7,
-    rs1: (u >>> 15) & 0x1f,
-    rs2: (u >>> 20) & 0x1f,
-    funct7: (u >>> 25) & 0x7f,
+    raw: unsigned,
+    opcode: unsigned & 0x7f,
+    rd: (unsigned >>> 7) & 0x1f,
+    funct3: (unsigned >>> 12) & 0x7,
+    rs1: (unsigned >>> 15) & 0x1f,
+    rs2: (unsigned >>> 20) & 0x1f,
+    funct7: (unsigned >>> 25) & 0x7f,
   };
 }

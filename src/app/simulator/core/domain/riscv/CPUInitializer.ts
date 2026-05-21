@@ -3,23 +3,23 @@ import { RiscvRegisters, CodeAnalysis, SimulatorStateObject, RiscvState } from '
 import { toInt32 } from '../shared/utils';
 
 function makeDefaultRegisters(): RiscvRegisters {
-  const r: RiscvRegisters = {};
-  for (let i = 0; i < 32; i++) {
-    r[`x${i}`] = 0;
+  const registers: RiscvRegisters = {};
+  for (let index = 0; index < 32; index++) {
+    registers[`x${index}`] = 0;
   }
 
-  r['x2'] = 2147479548; // sp
-  r['x3'] = 268468224; // gp
-  r['x0'] = 0;
-  return r;
+  registers['x2'] = 2147479548; // sp
+  registers['x3'] = 268468224; // gp
+  registers['x0'] = 0;
+  return registers;
 }
 
 function loadData(analysis: CodeAnalysis, memory: Record<number, number>) {
   for (const entry of analysis.data || []) {
     const base = entry.address;
     const values = entry.values || [];
-    for (let i = 0; i < values.length; i++) {
-      memory[base + i * 4] = toInt32(values[i]);
+    for (let index = 0; index < values.length; index++) {
+      memory[base + index * 4] = toInt32(values[index]);
     }
   }
 }

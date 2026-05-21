@@ -80,6 +80,7 @@ export type RiscvState = {
   registers: RiscvRegisters;
   memory: Record<number, number>;
   lastMutation?: StateMutation | null;
+  halted?: boolean;
 };
 
 export type SimulatorStateObject = {

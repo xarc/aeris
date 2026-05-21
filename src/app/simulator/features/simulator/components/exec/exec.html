@@ -27,11 +27,14 @@
                 <tr
                   [id]="'row-' + (PC_START + index * 4)"
                   [class.selected-row]="row.address === currentPc"
+                  [class.pseudo-row]="row.isPseudo"
                 >
                   <td>{{ getHexAddresses(row.address) }}</td>
                   <td>{{ row.code }}</td>
                   <td>{{ row.basic }}</td>
-                  <td>{{ row.source }}</td>
+                  <td [matTooltip]="row.isPseudo && row.source ? 'Pseudo-instrução' : ''">
+                    {{ row.source }}
+                  </td>
                 </tr>
                 @if (index !== getTextSegment().length - 1) {
                   <tr>
@@ -89,14 +92,30 @@
               @for (row of getDataSegment(); track row.address) {
                 <tr [id]="'row-data-' + row.address">
                   <td>{{ getHexAddresses(row.address) }}</td>
-                  <td [class.selected-row]="isDataCellSelected(row, 0)">{{ getHexValues(row.value0) }}</td>
-                  <td [class.selected-row]="isDataCellSelected(row, 4)">{{ getHexValues(row.value4) }}</td>
-                  <td [class.selected-row]="isDataCellSelected(row, 8)">{{ getHexValues(row.value8) }}</td>
-                  <td [class.selected-row]="isDataCellSelected(row, 12)">{{ getHexValues(row.value12) }}</td>
-                  <td [class.selected-row]="isDataCellSelected(row, 16)">{{ getHexValues(row.value16) }}</td>
-                  <td [class.selected-row]="isDataCellSelected(row, 20)">{{ getHexValues(row.value20) }}</td>
-                  <td [class.selected-row]="isDataCellSelected(row, 24)">{{ getHexValues(row.value24) }}</td>
-                  <td [class.selected-row]="isDataCellSelected(row, 28)">{{ getHexValues(row.value28) }}</td>
+                  <td [class.selected-row]="isDataCellSelected(row, 0)">
+                    {{ getHexValues(row.value0) }}
+                  </td>
+                  <td [class.selected-row]="isDataCellSelected(row, 4)">
+                    {{ getHexValues(row.value4) }}
+                  </td>
+                  <td [class.selected-row]="isDataCellSelected(row, 8)">
+                    {{ getHexValues(row.value8) }}
+                  </td>
+                  <td [class.selected-row]="isDataCellSelected(row, 12)">
+                    {{ getHexValues(row.value12) }}
+                  </td>
+                  <td [class.selected-row]="isDataCellSelected(row, 16)">
+                    {{ getHexValues(row.value16) }}
+                  </td>
+                  <td [class.selected-row]="isDataCellSelected(row, 20)">
+                    {{ getHexValues(row.value20) }}
+                  </td>
+                  <td [class.selected-row]="isDataCellSelected(row, 24)">
+                    {{ getHexValues(row.value24) }}
+                  </td>
+                  <td [class.selected-row]="isDataCellSelected(row, 28)">
+                    {{ getHexValues(row.value28) }}
+                  </td>
                 </tr>
                 @if (row.address !== lastDataRowAddr) {
                   <tr>

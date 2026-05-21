@@ -4,7 +4,7 @@ import { InstructionNode, DataSegment } from '../../shared/types';
 
 import { cleanDataLabel, isNumericLike } from '../utils/AnalyzerUtils';
 
-type PseudoHandler = (n: InstructionNode, data: DataSegment) => InstructionNode[];
+type PseudoHandler = (node: InstructionNode, data: DataSegment) => InstructionNode[];
 
 export class PseudoExpander {
   private readonly table: Record<string, PseudoHandler> = {
@@ -72,7 +72,7 @@ export class PseudoExpander {
     },
     la: (instruction, data) => {
       const label = instruction.basic.imm;
-      const entry = data.entries.find((e) => cleanDataLabel(e.label) === label);
+      const entry = data.entries.find((dataEntry) => cleanDataLabel(dataEntry.label) === label);
 
       if (!entry) {
         throw new AnalysisError(`label "${label}" not found`, instruction.source.line);
@@ -86,11 +86,11 @@ export class PseudoExpander {
       ) {
         const firstWord = entry.values[0] >>> 0;
 
-        const b0 = firstWord & 0xff;
-        const b1 = (firstWord >> 8) & 0xff;
-
-        if (b0 === 0 && b1 !== 0) {
-          target += 1;
+        for (let index = 0; index < 3; index++) {
+          if (((firstWord >>> (index * 8)) & 0xff) === 0) {
+            target += index + 1;
+            break;
+          }
         }
       }
 
@@ -272,7 +272,7 @@ export class PseudoExpander {
     }
 
     if (!isNumericLike(imm)) {
-      const entry = data.entries.find((e) => cleanDataLabel(e.label) === imm);
+      const entry = data.entries.find((dataEntry) => cleanDataLabel(dataEntry.label) === imm);
       if (!entry) {
         throw new AnalysisError(`label "${imm}" not found`, instruction.source.line);
       }
@@ -301,18 +301,18 @@ export class PseudoExpander {
     ];
   }
 
-  private expandStore(n: InstructionNode, data: DataSegment, opcode: string): InstructionNode[] {
-    const { rs2, rs1, imm } = n.basic;
+  private expandStore(node: InstructionNode, data: DataSegment, opcode: string): InstructionNode[] {
+    const { rs2, rs1, imm } = node.basic;
 
     if (!rs2 || !imm) {
-      return [n];
+      return [node];
     }
     if (rs1 && isNumericLike(imm)) {
       const number = parseInt(imm, 0);
       if (number >= IMM_I_MIN && number <= IMM_I_MAX) {
         return [
           {
-            ...n,
+            ...node,
             isPseudo: false,
           },
         ];
@@ -320,23 +320,23 @@ export class PseudoExpander {
     }
 
     if (imm.includes('(')) {
-      return [n];
+      return [node];
     }
 
     const base = rs1 ?? 'x0';
 
     if (!isNumericLike(imm)) {
-      const entry = data.entries.find((e) => cleanDataLabel(e.label) === imm);
+      const entry = data.entries.find((dataEntry) => cleanDataLabel(dataEntry.label) === imm);
       if (!entry) {
-        throw new AnalysisError(`label "${imm}" not found`, n.source.line);
+        throw new AnalysisError(`label "${imm}" not found`, node.source.line);
       }
 
       const upper = AUIPC_CONST;
-      const lower = entry.memoryPosition - (n.pc + (upper << 12));
+      const lower = entry.memoryPosition - (node.pc + (upper << 12));
 
       return [
-        this.make(n, { opcode: 'auipc', rd: base, imm: String(upper) }),
-        this.make(n, { opcode, rs2, rs1: base, imm: String(lower) }),
+        this.make(node, { opcode: 'auipc', rd: base, imm: String(upper) }),
+        this.make(node, { opcode, rs2, rs1: base, imm: String(lower) }),
       ];
     }
 
@@ -345,8 +345,8 @@ export class PseudoExpander {
     const lower = number - (upper << 12);
 
     return [
-      this.make(n, { opcode: 'lui', rd: base, imm: String(upper) }),
-      this.make(n, { opcode, rs2, rs1: base, imm: String(lower) }),
+      this.make(node, { opcode: 'lui', rd: base, imm: String(upper) }),
+      this.make(node, { opcode, rs2, rs1: base, imm: String(lower) }),
     ];
   }
 
