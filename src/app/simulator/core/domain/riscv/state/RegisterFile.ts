@@ -8,11 +8,11 @@ export class RegisterFile {
     this.registers = new Int32Array(32);
 
     if (initial) {
-      for (let i = 0; i < 32; i++) {
-        const register = `x${i}`;
+      for (let index = 0; index < 32; index++) {
+        const register = `x${index}`;
         const value = initial[register];
         if (typeof value === 'number') {
-          this.registers[i] = toInt32(value);
+          this.registers[index] = toInt32(value);
         }
       }
     }
@@ -37,8 +37,8 @@ export class RegisterFile {
 
   toObject(): RiscvRegisters {
     const out: RiscvRegisters = {};
-    for (let i = 0; i < 32; i++) {
-      out[`x${i}`] = this.registers[i] | 0;
+    for (let index = 0; index < 32; index++) {
+      out[`x${index}`] = this.registers[index] | 0;
     }
     return out;
   }

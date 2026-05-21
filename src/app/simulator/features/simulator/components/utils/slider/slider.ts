@@ -17,8 +17,8 @@ export class Slider {
   @Output() valueChange = new EventEmitter<number>();
 
   onInput(event: Event) {
-    const v = Number((event.target as HTMLInputElement).value);
-    this.value = v;
-    this.valueChange.emit(v);
+    const inputValue = Number((event.target as HTMLInputElement).value);
+    this.value = inputValue;
+    this.valueChange.emit(inputValue);
   }
 }
