@@ -400,6 +400,10 @@ export class HelpDialog {
       name: `Number ${SyscallCode.ReadString}`,
       desc: 'ReadString: reads string into memory (a0 buffer, a1 size)',
     },
+    {
+      name: `Number ${SyscallCode.Exit}`,
+      desc: 'Exit: terminates the program',
+    },
   ];
 
   get currentTab() {
