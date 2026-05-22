@@ -86,6 +86,12 @@ export class TextSegmentBuilder {
 
     const basic: BasicInstruction = { opcode, args: [...args] };
 
+    if (opcode === 'jal' && args.length === 1) {
+      basic.rd = 'x1';
+      basic.imm = args[0];
+      return basic;
+    }
+
     spec.operands.forEach((op: string, operandIndex: number) => {
       const value = args[operandIndex];
 
@@ -154,11 +160,6 @@ export class TextSegmentBuilder {
     });
 
     if ((opcode === 'jal' || opcode === 'j') && !basic.imm && args[0]) {
-      basic.imm = args[0];
-    }
-
-    if (opcode === 'jal' && args.length === 1) {
-      basic.rd = 'x1';
       basic.imm = args[0];
     }
 
