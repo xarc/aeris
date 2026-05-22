@@ -17,8 +17,8 @@ export class SyscallAdapter extends SyscallPort {
 
       case 'exit': {
         const entries = this.console.getSnapshot().entries;
-        const lastSystem = [...entries].reverse().find((entry) => entry.level === 'system');
-        const prefix = lastSystem && !lastSystem.message.endsWith('\n') ? '\n' : '';
+        const lastEntry = entries[entries.length - 1];
+        const prefix = lastEntry?.level === 'system' && !lastEntry.message.endsWith('\n') ? '\n' : '';
         this.console.print(`${prefix}-- program is finished --`, 'system');
         return {};
       }

@@ -93,7 +93,7 @@ export class RunProgramUseCase {
     const startPc = text[0].address | 0;
     const endPc = (startPc + text.length * 4) | 0;
 
-    if (riscv.pc >= endPc) {
+    if (riscv.pc >= endPc || riscv.halted) {
       this.store.setEndReached(true);
     }
   }
