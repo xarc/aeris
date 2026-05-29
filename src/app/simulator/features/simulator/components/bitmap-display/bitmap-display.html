@@ -1,0 +1,42 @@
+<div class="bitmap-panel">
+  <div class="panel-header">
+    <span class="title">Bitmap Display</span>
+    <div class="controls">
+      @if (enabled) {
+        <button
+          class="btn-ctrl"
+          [class.active]="gameModeEnabled"
+          (click)="toggleGameMode()"
+          matTooltip="Game mode: captura teclado → 0xFF010000"
+        >
+          <mat-icon>sports_esports</mat-icon>
+        </button>
+      }
+      <button
+        class="btn-ctrl"
+        [class.active]="enabled"
+        (click)="toggleDisplay()"
+        matTooltip="Habilitar bitmap display"
+      >
+        <mat-icon>monitor</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  @if (enabled) {
+    <div class="canvas-wrapper">
+      <canvas #canvas width="64" height="64" class="display-canvas"></canvas>
+    </div>
+
+    <div class="info-bar">
+      <span>Framebuffer: <code>{{ framebufferAddr }}</code></span>
+      <span>64×64 · 0xRRGGBB/word</span>
+      @if (gameModeEnabled) {
+        <span class="game-hint">
+          <mat-icon class="key-icon">keyboard</mat-icon>
+          keyCode → <code>{{ keyboardAddr }}</code>
+        </span>
+      }
+    </div>
+  }
+</div>

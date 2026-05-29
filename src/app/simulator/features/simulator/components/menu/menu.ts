@@ -70,8 +70,16 @@ export class Menu {
     this.facade.assembleCode();
   }
 
+  get isRunning$() {
+    return this.facade.isRunning$;
+  }
+
   runEntireProgram(): void {
     this.facade.runEntireProgram();
+  }
+
+  stopExecution(): void {
+    this.facade.stopExecution();
   }
 
   runOneStep(): void {

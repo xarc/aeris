@@ -290,6 +290,48 @@ export class SimulatorStore {
     };
   }
 
+  private _pendingMmio: Record<number, number> = {};
+  private _stopRequested = false;
+
+  public writeMemoryWord(address: number, value: number): void {
+    const wordAddr = (address | 0) & ~3;
+    this._pendingMmio[wordAddr] = value | 0;
+
+    const state = this.subject.value;
+    const riscv = state.simulation?.riscv;
+    if (!state.simulation || !riscv) return;
+
+    this.subject.next({
+      ...state,
+      simulation: {
+        ...state.simulation,
+        riscv: { ...riscv, memory: { ...riscv.memory, [wordAddr]: value | 0 } },
+      },
+    });
+  }
+
+  public drainMmioWrites(): Record<number, number> {
+    const writes = { ...this._pendingMmio };
+    this._pendingMmio = {};
+    return writes;
+  }
+
+  public refreshSimulation(sim: SimulatorStateObject): void {
+    this.patch({ simulation: sim });
+  }
+
+  public requestStop(): void {
+    this._stopRequested = true;
+  }
+
+  public clearStopRequest(): void {
+    this._stopRequested = false;
+  }
+
+  public isStopRequested(): boolean {
+    return this._stopRequested;
+  }
+
   public setAutosaveEnabled(enabled: boolean): void {
     this.autosaveEnabled = enabled;
     localStorage.setItem(AUTOSAVE_ENABLED_KEY, String(enabled));

@@ -6,6 +6,7 @@ import { Editor } from './components/editor/editor';
 import { Exec } from './components/exec/exec';
 import { Register } from './components/registers/registers';
 import { Console } from './components/console/console';
+import { BitmapDisplay } from './components/bitmap-display/bitmap-display';
 import { DumpFileDialog } from './dialogs/dump-file-dialog/dump-file-dialog';
 import { SettingsDialog } from './dialogs/settings-dialog/settings-dialog';
 import { HelpDialog } from './dialogs/help-dialog/help-dialog';
@@ -44,6 +45,7 @@ import { Slider } from './components/utils/slider/slider';
     Checkbox,
     Toggle,
     Slider,
+    BitmapDisplay,
   ],
   imports: [
     CommonModule,

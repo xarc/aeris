@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { map } from 'rxjs';
 import { ConsolePort } from '../../ports/console.port/console.port';
 import { SimulatorStore } from '../simulator.store/simulator.store';
 import { FilePort } from '../../ports/file.port/file.port';
@@ -120,8 +121,16 @@ export class SimulatorFacade {
     this.assembleUseCase.assemble();
   }
 
+  get isRunning$() {
+    return this.store.state$.pipe(map((s) => s.phase === 'running'));
+  }
+
   runEntireProgram(): void {
     this.runUseCase.runAll();
+  }
+
+  stopExecution(): void {
+    this.store.requestStop();
   }
 
   runOneStep(): void {
