@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { SimulatorFacade } from '../../../../core/state/simulator.facade/simulator.facade';
 
 @Component({
   selector: 'app-simulator-page',
@@ -7,24 +8,24 @@ import { Component } from '@angular/core';
   styleUrl: './simulator-page.scss',
 })
 export class SimulatorPage {
-  constructor() {}
+  constructor(readonly facade: SimulatorFacade) {}
 
-  workspacePct = 65;
-  minPct = 30;
-  maxPct = 85;
+  workspaceHeightPercent = 65;
+  minimumWorkspacePercent = 30;
+  maximumWorkspacePercent = 85;
 
   onVerticalResizerDown(event: PointerEvent) {
     event.preventDefault();
 
     const startY = event.clientY;
-    const startPct = this.workspacePct;
+    const startPct = this.workspaceHeightPercent;
     const container = (event.target as HTMLElement).closest('.vertical-split') as HTMLElement;
 
     const height = container.getBoundingClientRect().height;
 
     const move = (e: PointerEvent) => {
       const delta = ((e.clientY - startY) / height) * 100;
-      this.workspacePct = Math.min(this.maxPct, Math.max(this.minPct, startPct + delta));
+      this.workspaceHeightPercent = Math.min(this.maximumWorkspacePercent, Math.max(this.minimumWorkspacePercent, startPct + delta));
     };
 
     const up = () => {

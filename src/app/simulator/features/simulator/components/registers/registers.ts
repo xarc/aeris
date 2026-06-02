@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/core';
 import { SimulatorStore } from '../../../../core/state/simulator.store/simulator.store';
 import { SimulatorStateObject } from '../../../../core/domain/shared/types';
 
@@ -8,17 +8,25 @@ import { SimulatorStateObject } from '../../../../core/domain/shared/types';
   standalone: false,
   templateUrl: './registers.html',
   styleUrl: './registers.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Register {
   lastChangedIndex: number | null = null;
 
   regKeys: string[] = Array.from({ length: 32 }, (_, index) => `x${index}`);
 
-  constructor(private readonly store: SimulatorStore) {
+  constructor(
+    private readonly store: SimulatorStore,
+    private readonly changeDetectorRef: ChangeDetectorRef,
+  ) {
     this.store.state$.subscribe((state) => {
-      const mutation = state.simulation?.riscv?.lastMutation;
+      if (state.phase === 'running') {
+        return;
+      }
 
+      const mutation = state.simulation?.riscv?.lastMutation;
       this.lastChangedIndex = mutation?.writtenRegisterIndex ?? null;
+      this.changeDetectorRef.markForCheck();
 
       if (this.lastChangedIndex !== null) {
         this.scrollToSelectedRow(this.lastChangedIndex);

@@ -36,6 +36,7 @@ export const INSTRUCTIONS: string[] = [
   'sll',
   'sub',
   'add',
+  'ecall',
   //pseudos:
   'bgt',
   'bgtu',
@@ -60,7 +61,6 @@ export const INSTRUCTIONS: string[] = [
   'sgtz',
   'beqz',
   'bgez',
-  'ecall'
 ];
 
 export const REGISTERS: string[] = [
