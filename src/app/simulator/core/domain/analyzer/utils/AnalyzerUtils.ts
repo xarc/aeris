@@ -1,18 +1,18 @@
 import { AnalysisError } from '../../shared/errors';
 import { RegFile } from '../../shared/types';
 
-export function validateLabelToken(label: string) {
+export function validateLabelToken(label: string, line?: number) {
   if (!label.endsWith(':')) {
-    throw new AnalysisError(`"${label}" is not a valid label`);
+    throw new AnalysisError(`"${label}" is not a valid label`, line);
   }
   const clean = label.slice(0, -1);
 
   if (/^[0-9]/.test(clean)) {
-    throw new AnalysisError(`"${clean}" cannot start with a number`);
+    throw new AnalysisError(`"${clean}" cannot start with a number`, line);
   }
   const regex = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
   if (!regex.test(clean)) {
-    throw new AnalysisError(`"${clean}" cannot have special characters`);
+    throw new AnalysisError(`"${clean}" cannot have special characters`, line);
   }
 }
 
@@ -25,20 +25,20 @@ export function cleanDataLabel(labelWithColon: string): string {
   return labelWithColon.endsWith(':') ? labelWithColon.slice(0, -1) : labelWithColon;
 }
 
-export function resolveRegToken(token?: string): string | undefined {
+export function resolveRegToken(token?: string, line?: number): string | undefined {
   if (!token) {
     return token;
   }
   if (token.startsWith('x') && /^\d+$/.test(token.slice(1))) {
     const index = parseInt(token.slice(1), 10);
     if (index < 0 || index > 31) {
-      throw new AnalysisError(`"${token}" is not a valid register`);
+      throw new AnalysisError(`"${token}" is not a valid register`, line);
     }
     return token;
   }
   const register = RegFile[token];
   if (!register) {
-    throw new AnalysisError(`"${token}" is not a valid register`);
+    throw new AnalysisError(`"${token}" is not a valid register`, line);
   }
   return `x${register.value}`;
 }
