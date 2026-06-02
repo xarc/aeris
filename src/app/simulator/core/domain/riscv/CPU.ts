@@ -84,12 +84,19 @@ export class CPU {
     let aluB: number;
 
     if (control.aluSrcImm) {
-      if (control.memWrite) aluB = sImm;
-      else if (control.branch) aluB = rs2Value;
-      else if (control.lui) aluB = uImm;
-      else if (control.jump && !control.jalr) aluB = jImm;
-      else if (control.auipc) aluB = uImm;
-      else aluB = iImm;
+      if (control.memWrite) {
+        aluB = sImm;
+      } else if (control.branch) {
+        aluB = rs2Value;
+      } else if (control.lui) {
+        aluB = uImm;
+      } else if (control.jump && !control.jalr) {
+        aluB = jImm;
+      } else if (control.auipc) {
+        aluB = uImm;
+      } else {
+        aluB = iImm;
+      }
     } else {
       aluB = rs2Value;
     }
