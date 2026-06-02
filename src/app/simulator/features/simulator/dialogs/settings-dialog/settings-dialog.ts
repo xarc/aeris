@@ -5,7 +5,7 @@ import { SimulatorStore } from '../../../../core/state/simulator.store/simulator
 import { ThemeService } from '../../../../core/theme/theme-service';
 import { Theme } from '../../../../core/theme/theme.types';
 
-type Tab = 'editor' | 'simulator' | 'display' | 'about';
+type Tab = 'editor' | 'performance' | 'about';
 
 @Component({
   selector: 'app-settings-dialog',
@@ -20,6 +20,8 @@ export class SettingsDialog implements OnInit {
     private themeService: ThemeService,
   ) {
     this.autosave = this.store.isAutosaveEnabled();
+    this.selectedInstructionsPerTick = this.store.getInstructionsPerTick();
+    this.msBetweenTicks = this.store.getMsBetweenTicks();
   }
 
   version = packageJson.version;
@@ -37,6 +39,16 @@ export class SettingsDialog implements OnInit {
   themeOptions: Array<{ label: string; value: Theme }> = [
     { label: 'Dark', value: 'dark' },
     // { label: 'Light', value: 'light' },
+  ];
+
+  selectedInstructionsPerTick = 1000;
+  msBetweenTicks = 0;
+
+  executionSpeedOptions: Array<{ label: string; value: number }> = [
+    { label: 'Slow (100)', value: 100 },
+    { label: 'Normal (1000)', value: 1000 },
+    { label: 'Fast (5000)', value: 5000 },
+    { label: 'Maximum (10000)', value: 10000 },
   ];
 
   ngOnInit() {
@@ -65,13 +77,24 @@ export class SettingsDialog implements OnInit {
   closeDialog() {
     this.dialogRef.close();
   }
-  saveSettings() {
+  onExecutionSpeedChange(value: number): void {
+    this.selectedInstructionsPerTick = value;
+  }
+
+  onMsBetweenTicksChange(value: number): void {
+    this.msBetweenTicks = value;
+  }
+
+  saveSettings(): void {
     this.store.setAutosaveEnabled(this.autosave);
+    this.store.setInstructionsPerTick(this.selectedInstructionsPerTick);
+    this.store.setMsBetweenTicks(this.msBetweenTicks);
     this.themeService.setTheme(this.selectedTheme as Theme);
 
     this.dialogRef.close({
       autosave: this.autosave,
       theme: this.selectedTheme,
+      instructionsPerTick: this.selectedInstructionsPerTick,
     });
   }
 

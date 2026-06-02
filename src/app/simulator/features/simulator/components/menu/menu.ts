@@ -29,6 +29,9 @@ export class Menu {
   get canReset$() {
     return this.facade.canReset$;
   }
+  get canStop$() {
+    return this.facade.canStop$;
+  }
   get canAssemble$() {
     return this.facade.canAssemble$;
   }
@@ -72,6 +75,10 @@ export class Menu {
 
   runEntireProgram(): void {
     this.facade.runEntireProgram();
+  }
+
+  stopExecution(): void {
+    this.facade.stopExecution();
   }
 
   runOneStep(): void {

@@ -99,20 +99,45 @@ export class Parser {
   }
 
   private tokenize(line: string): string[] {
-    const tokens: string[] = [];
-
-    const regex = /"[^"]*"|[^\s,]+/g;
-    const matches = line.match(regex) ?? [];
-
-    for (const match of matches) {
-      if (!match.startsWith('"')) {
-        const parts = match.split(',').filter((token) => token.trim() !== '');
-        tokens.push(...parts);
-      } else {
-        tokens.push(match);
-      }
+    const spaceIndex = line.search(/\s/);
+    if (spaceIndex === -1) {
+      return [line];
     }
 
-    return tokens;
+    const opcode = line.slice(0, spaceIndex);
+    const rest = line.slice(spaceIndex + 1).trim();
+
+    if (!rest) {
+      return [opcode];
+    }
+
+    if (opcode.endsWith(':')) {
+      return [opcode, ...this.tokenize(rest)];
+    }
+
+    if (opcode.startsWith('.') || opcode.endsWith(',')) {
+      return this.tokenizeDirective(line);
+    }
+
+    const operands = rest
+      .split(',')
+      .map((operand) => operand.trim())
+      .filter((operand) => operand !== '');
+
+    return [opcode, ...operands];
+  }
+
+  private tokenizeDirective(rest: string): string[] {
+    const regex = /"[^"]*"|[^\s,]+/g;
+    const matches = rest.match(regex) ?? [];
+    const parts: string[] = [];
+    for (const match of matches) {
+      if (!match.startsWith('"')) {
+        parts.push(...match.split(',').filter((part) => part.trim() !== ''));
+      } else {
+        parts.push(match);
+      }
+    }
+    return parts;
   }
 }

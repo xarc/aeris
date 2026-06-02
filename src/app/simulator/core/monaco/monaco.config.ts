@@ -22,6 +22,7 @@ export const monacoConfig: NgxMonacoEditorConfig = {
           { include: '@numbers' },
           { include: '@registers' },
           { include: '@directives' },
+          [/[a-zA-Z_$][\w$]*(?=\s*:)/, 'label'],
           [
             /[a-z_$][\w$]*/,
             {
@@ -76,6 +77,7 @@ export const monacoConfig: NgxMonacoEditorConfig = {
       rules: [
         { token: 'instructions', foreground: '#6a9a9f' },
         { token: 'identifier', foreground: '#dfdfdf' },
+        { token: 'label', foreground: '#7aadcf' },
         { token: 'directives', foreground: '#9c5a91' },
         { token: 'string', foreground: '#00cc33' },
         { token: 'comment', foreground: '#5f875f' },
@@ -93,6 +95,7 @@ export const monacoConfig: NgxMonacoEditorConfig = {
       rules: [
         { token: 'instructions', foreground: '#005f6a' },
         { token: 'identifier', foreground: '#1e1e1e' },
+        { token: 'label', foreground: '#3a7fc1' },
         { token: 'directives', foreground: '#7a3e74' },
         { token: 'string', foreground: '#008000' },
         { token: 'comment', foreground: '#6a9955' },

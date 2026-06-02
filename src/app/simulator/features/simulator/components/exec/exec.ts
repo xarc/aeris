@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, ViewChild } from '@angular/core';
 import { SimulatorStore } from '../../../../core/state/simulator.store/simulator.store';
 import { SimulatorStateObject } from '../../../../core/domain/shared/types';
 import { ConstantsInit } from '../../../../core/domain/shared/constants';
@@ -28,6 +28,7 @@ type DataRow = {
   standalone: false,
   templateUrl: './exec.html',
   styleUrl: './exec.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Exec implements OnDestroy {
   @ViewChild('splitter', { static: true })
@@ -37,11 +38,11 @@ export class Exec implements OnDestroy {
   readonly MAX_MEM_CONTROL = 4294967296;
   private lastPc = -1;
 
-  textPct = 50;
-  dataPct = 50;
+  textSegmentPercent = 50;
+  dataSegmentPercent = 50;
 
-  minPct = 25;
-  maxPct = 75;
+  minimumSplitPercent = 25;
+  maximumSplitPercent = 75;
 
   private moveHandler?: (event: PointerEvent) => void;
   private upHandler?: (event: PointerEvent) => void;
@@ -63,26 +64,39 @@ export class Exec implements OnDestroy {
 
   simulation: SimulatorStateObject | null = null;
   lastWrittenMemoryAddress: number | null = null;
+  private isRunning = false;
 
-  constructor(private readonly store: SimulatorStore) {
+  textSegmentRows: TextRow[] = [];
+  dataSegmentRows: DataRow[] = [];
+
+  constructor(
+    private readonly store: SimulatorStore,
+    private readonly changeDetector: ChangeDetectorRef,
+    private readonly ngZone: NgZone,
+  ) {
     this.store.state$.subscribe((state) => {
       this.simulation = state.simulation;
+
+      const isRunning = state.phase === 'running';
+      this.isRunning = isRunning;
 
       const writtenAddr = state.simulation?.riscv?.lastMutation?.writtenMemoryAddress ?? null;
       this.lastWrittenMemoryAddress = writtenAddr;
 
-      if (writtenAddr !== null) {
-        this.navigateToWrittenAddress(writtenAddr);
-      }
+      if (!isRunning) {
+        this.rebuildTextSegment();
+        this.rebuildDataSegment();
+        this.changeDetector.markForCheck();
 
-      const pc = state.simulation?.riscv?.pc;
+        if (writtenAddr !== null) {
+          this.navigateToWrittenAddress(writtenAddr);
+        }
 
-      if (pc != null && pc !== this.lastPc) {
-        this.lastPc = pc;
-
-        setTimeout(() => {
-          this.scrollToSelectedRow(pc);
-        });
+        const pc = state.simulation?.riscv?.pc;
+        if (pc != null && pc !== this.lastPc) {
+          this.lastPc = pc;
+          setTimeout(() => this.scrollToSelectedRow(pc));
+        }
       }
     });
   }
@@ -92,6 +106,10 @@ export class Exec implements OnDestroy {
   }
 
   get currentPc(): number {
+    if (this.isRunning) {
+      return -1;
+    }
+
     const simulation = this.simulation;
 
     if (!simulation || !simulation.riscv) {
@@ -101,32 +119,24 @@ export class Exec implements OnDestroy {
     return simulation.riscv.pc;
   }
 
-  getTextSegment(): TextRow[] {
+  private rebuildTextSegment(): void {
     const simulation = this.simulation;
-
     if (!simulation) {
-      return [];
+      this.textSegmentRows = [];
+      return;
     }
 
-    const rows: TextRow[] = [];
     const instructions = simulation.analysis?.text ?? [];
-
-    for (let index = 0; index < instructions.length; index++) {
-      const instruction = instructions[index];
-
-      rows.push({
-        address: instruction.address,
-        code: this.normalizeHex(instruction.machine?.hex ?? ''),
-        basic: [...(instruction.operands ?? [])].join(' '),
-        source: instruction.raw?.join(' ') ?? '',
-        isPseudo: instruction.isPseudo ?? false,
-      });
-    }
-
-    return rows;
+    this.textSegmentRows = instructions.map((instruction) => ({
+      address: instruction.address,
+      code: this.normalizeHex(instruction.machine?.hex ?? ''),
+      basic: [...(instruction.operands ?? [])].join(' '),
+      source: instruction.raw?.join(' ') ?? '',
+      isPseudo: instruction.isPseudo ?? false,
+    }));
   }
 
-  getDataSegment(): DataRow[] {
+  private rebuildDataSegment(): void {
     const rows: DataRow[] = [];
     const startAddress = this.memoryType.init + this.page * 256;
 
@@ -144,7 +154,7 @@ export class Exec implements OnDestroy {
       });
     }
 
-    return rows;
+    this.dataSegmentRows = rows;
   }
 
   private readMemory(address: number): number {
@@ -200,19 +210,17 @@ export class Exec implements OnDestroy {
   }
 
   get lastDataRowAddr(): number {
-    const rows = this.getDataSegment();
-
-    if (rows.length === 0) {
+    if (this.dataSegmentRows.length === 0) {
       return 0;
     }
-
-    return rows[rows.length - 1].address;
+    return this.dataSegmentRows[this.dataSegmentRows.length - 1].address;
   }
 
   previousPage(): void {
     if (this.control > 0) {
       this.page--;
       this.updateControl();
+      this.rebuildDataSegment();
     }
   }
 
@@ -220,12 +228,14 @@ export class Exec implements OnDestroy {
     if (this.control < this.MAX_MEM_CONTROL) {
       this.page++;
       this.updateControl();
+      this.rebuildDataSegment();
     }
   }
 
   selectOnChange(): void {
     this.page = 0;
     this.control = this.memoryType.init;
+    this.rebuildDataSegment();
   }
 
   numberToHexadecimal(value: number): string {
@@ -295,13 +305,6 @@ export class Exec implements OnDestroy {
     let result = '';
 
     //TODO: verificar se é MSB ou LSB e se precisa de " "
-
-    // for (let i = 0; i < 4; i++) {
-    //   const byte = (word >> (i * 8)) & 0xff;
-    //   result += this.byteToAscii(byte) + " ";
-    // }
-
-    // MSB -> LSB (ao contrário)
     for (let index = 3; index >= 0; index--) {
       const byte = (word >> (index * 8)) & 0xff;
       result += this.byteToAscii(byte) + ' ';
@@ -329,38 +332,50 @@ export class Exec implements OnDestroy {
     const splitterElement = this.splitterRef.nativeElement;
     const splitterRect = splitterElement.getBoundingClientRect();
 
-    this.moveHandler = (event: PointerEvent) => {
-      const offsetY = event.clientY - splitterRect.top;
-      let newTopPercentage = (offsetY / splitterRect.height) * 100;
+    this.ngZone.runOutsideAngular(() => {
+      let animationFramePending = false;
 
-      if (newTopPercentage < this.minPct) {
-        newTopPercentage = this.minPct;
-      }
+      this.moveHandler = (event: PointerEvent) => {
+        const offsetY = event.clientY - splitterRect.top;
+        let newTopPercentage = (offsetY / splitterRect.height) * 100;
 
-      if (newTopPercentage > this.maxPct) {
-        newTopPercentage = this.maxPct;
-      }
+        if (newTopPercentage < this.minimumSplitPercent) {
+          newTopPercentage = this.minimumSplitPercent;
+        }
 
-      this.textPct = Math.round(newTopPercentage);
-      this.dataPct = 100 - this.textPct;
-    };
+        if (newTopPercentage > this.maximumSplitPercent) {
+          newTopPercentage = this.maximumSplitPercent;
+        }
 
-    this.upHandler = () => {
-      if (this.moveHandler) {
-        window.removeEventListener('pointermove', this.moveHandler);
-      }
+        this.textSegmentPercent = Math.round(newTopPercentage);
+        this.dataSegmentPercent = 100 - this.textSegmentPercent;
 
-      if (this.upHandler) {
-        window.removeEventListener('pointerup', this.upHandler);
-      }
+        if (!animationFramePending) {
+          animationFramePending = true;
+          requestAnimationFrame(() => {
+            animationFramePending = false;
+            this.changeDetector.detectChanges();
+          });
+        }
+      };
 
-      try {
-        (pointerEvent.target as HTMLElement).releasePointerCapture?.(pointerEvent.pointerId);
-      } catch {}
-    };
+      this.upHandler = () => {
+        if (this.moveHandler) {
+          window.removeEventListener('pointermove', this.moveHandler);
+        }
 
-    window.addEventListener('pointermove', this.moveHandler);
-    window.addEventListener('pointerup', this.upHandler, { once: true });
+        if (this.upHandler) {
+          window.removeEventListener('pointerup', this.upHandler);
+        }
+
+        try {
+          (pointerEvent.target as HTMLElement).releasePointerCapture?.(pointerEvent.pointerId);
+        } catch {}
+      };
+
+      window.addEventListener('pointermove', this.moveHandler);
+      window.addEventListener('pointerup', this.upHandler, { once: true });
+    });
   }
 
   ngOnDestroy(): void {

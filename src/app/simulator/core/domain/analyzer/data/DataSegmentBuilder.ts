@@ -27,7 +27,7 @@ export class DataSegmentBuilder {
         continue;
       }
 
-      validateLabelToken(label);
+      validateLabelToken(label, line.line);
 
       const dataDirective = (directive ?? '') as DataDirective;
       if (!Directives.includes(dataDirective as any)) {

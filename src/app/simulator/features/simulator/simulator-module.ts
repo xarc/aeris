@@ -26,7 +26,6 @@ import { DialogHeader } from './components/utils/dialog-header/dialog-header';
 import { Checkbox } from './components/utils/checkbox/checkbox';
 import { Toggle } from './components/utils/toggle/toggle';
 import { Slider } from './components/utils/slider/slider';
- 
 @NgModule({
   declarations: [
     SimulatorPage,
