@@ -41,12 +41,24 @@ export class TextSegmentBuilder {
 
       const isContextual = !!CONTEXTUAL_SET[basic.opcode];
 
-      const isRealMem =
-        basic.rs1 !== undefined && basic.imm !== undefined && !isNaN(parseInt(basic.imm, 10));
+      const isRealMemoryForm =
+        basic.rs1 !== undefined &&
+        basic.imm !== undefined &&
+        !isNaN(parseInt(basic.imm, 10)) &&
+        !(basic as any).isPseudoMemoryForm;
 
-      const mustExpand = !!PSEUDO_SET[basic.opcode] || (isContextual && !isRealMem);
+      const mustExpand =
+        !!PSEUDO_SET[basic.opcode] ||
+        (isContextual && !isRealMemoryForm) ||
+        !!(basic as any).isPseudoShortForm;
 
       const expanded = mustExpand ? this.pseudoExpander.expand(baseNode, data) : [baseNode];
+
+      if (mustExpand) {
+        for (const node of expanded) {
+          node.isPseudo = true;
+        }
+      }
 
       for (let index = 0; index < expanded.length; index++) {
         const expandedInstruction = expanded[index];
@@ -76,87 +88,24 @@ export class TextSegmentBuilder {
   private buildBasic(tokens: string[], line?: number): BasicInstruction {
     const [opcode, ...args] = tokens;
     const spec = INSTRUCTION_SET[opcode] ?? PSEUDO_SET[opcode];
+
     if (!spec) {
       throw new AnalysisError(`"${opcode}" is not a recognized operator`, line);
     }
 
-    if (spec.operands.length === 0 && args.length > 0) {
-      throw new AnalysisError(`"${opcode}" does not take any operands`, line);
-    }
+    this.validateArgCount(opcode, args, spec, line);
 
     const basic: BasicInstruction = { opcode, args: [...args] };
 
-    if (opcode === 'jal' && args.length === 1) {
-      basic.rd = 'x1';
-      basic.imm = args[0];
+    const shortForm = this.tryBuildShortForm(opcode, args, basic);
+    if (shortForm) {
       return basic;
     }
 
-    spec.operands.forEach((op: string, operandIndex: number) => {
-      const value = args[operandIndex];
+    const isStore = spec.operands[0] === 'rs2';
 
-      if (op === 'rd' || op === 'rs1' || op === 'rs2') {
-        (basic as any)[op] = resolveRegToken(value);
-        return;
-      }
-
-      if (op === 'imm') {
-        basic.imm = value;
-        return;
-      }
-
-      if (op === 'mem') {
-        basic.mem = value;
-        if (!value) {
-          return;
-        }
-
-        const parsed = parseMemToken(value);
-        if (parsed) {
-          basic.imm = parsed.imm;
-          basic.rs1 = resolveRegToken(parsed.rs1);
-          return;
-        }
-
-        if (/^\(\s*\w+\s*\)$/.test(value)) {
-          const registerName = value.slice(1, -1).trim();
-          const register = resolveRegToken(registerName);
-
-          if (!register) {
-            throw new AnalysisError(`Invalid register ${value}`, line);
-          }
-
-          basic.rs1 = register;
-          basic.imm = '0';
-          return;
-        }
-
-        if (isNumericLike(value)) {
-          const number = parseInt(value, 0);
-
-          if (number >= IMM_I_MIN && number <= IMM_I_MAX) {
-            basic.imm = value;
-            basic.rs1 = 'x0';
-            return;
-          }
-
-          basic.imm = value;
-          delete (basic as any).rs1;
-          return;
-        }
-
-        basic.imm = value;
-
-        if (
-          (basic.opcode === 'sw' || basic.opcode === 'sb' || basic.opcode === 'sh') &&
-          args.length === 3 &&
-          operandIndex === 1
-        ) {
-          const baseReg = args[2];
-          basic.rs1 = resolveRegToken(baseReg);
-          return;
-        }
-      }
+    spec.operands.forEach((operandType: string, operandIndex: number) => {
+      this.applyOperand(operandType, operandIndex, args, basic, isStore, spec, line);
     });
 
     if ((opcode === 'jal' || opcode === 'j') && !basic.imm && args[0]) {
@@ -164,6 +113,148 @@ export class TextSegmentBuilder {
     }
 
     return basic;
+  }
+
+  private validateArgCount(
+    opcode: string,
+    args: string[],
+    spec: { operands: string[] },
+    line?: number,
+  ): void {
+    if (spec.operands.length === 0 && args.length > 0) {
+      throw new AnalysisError(`"${opcode}" does not take any operands`, line);
+    }
+
+    const isStore = spec.operands[0] === 'rs2';
+    const maximumArguments = isStore ? spec.operands.length + 1 : spec.operands.length;
+
+    if (spec.operands.length > 0 && args.length > maximumArguments) {
+      throw new AnalysisError(
+        `"${opcode}" takes ${spec.operands.length} operand(s) but ${args.length} were provided`,
+        line,
+      );
+    }
+  }
+
+  private tryBuildShortForm(opcode: string, args: string[], basic: BasicInstruction): boolean {
+    if (opcode === 'jal' && args.length === 1) {
+      basic.rd = 'x1';
+      basic.imm = args[0];
+      (basic as any).isPseudoShortForm = true;
+      return true;
+    }
+
+    if (opcode === 'jalr' && args.length === 1) {
+      basic.rd = 'x1';
+      basic.rs1 = resolveRegToken(args[0]);
+      basic.imm = '0';
+      (basic as any).isPseudoShortForm = true;
+      return true;
+    }
+
+    if (opcode === 'jalr' && args.length === 2) {
+      const parsed = parseMemToken(args[1]);
+      if (parsed) {
+        basic.rd = resolveRegToken(args[0]);
+        basic.rs1 = resolveRegToken(parsed.rs1);
+        basic.imm = parsed.imm;
+      } else {
+        basic.rd = 'x1';
+        basic.rs1 = resolveRegToken(args[0]);
+        basic.imm = args[1];
+      }
+      (basic as any).isPseudoShortForm = true;
+      return true;
+    }
+
+    return false;
+  }
+
+  private applyOperand(
+    operandType: string,
+    operandIndex: number,
+    args: string[],
+    basic: BasicInstruction,
+    isStore: boolean,
+    spec: { operands: string[] },
+    line?: number,
+  ): void {
+    const value = args[operandIndex];
+
+    if (operandType === 'rd' || operandType === 'rs1' || operandType === 'rs2') {
+      (basic as any)[operandType] = resolveRegToken(value);
+      return;
+    }
+
+    if (operandType === 'imm') {
+      basic.imm = value;
+      return;
+    }
+
+    if (operandType === 'mem') {
+      this.applyMemOperand(value, operandIndex, args, basic, isStore, spec, line);
+    }
+  }
+
+  private applyMemOperand(
+    value: string,
+    operandIndex: number,
+    args: string[],
+    basic: BasicInstruction,
+    isStore: boolean,
+    spec: { operands: string[] },
+    line?: number,
+  ): void {
+    basic.mem = value;
+
+    if (!value) {
+      return;
+    }
+
+    const parsed = parseMemToken(value);
+    if (parsed) {
+      basic.imm = parsed.imm;
+      basic.rs1 = resolveRegToken(parsed.rs1);
+      if (!/^-?\d/.test(value)) {
+        (basic as any).isPseudoMemoryForm = true;
+      }
+      return;
+    }
+
+    (basic as any).isPseudoMemoryForm = true;
+
+    if (/^\(\s*\w+\s*\)$/.test(value)) {
+      const registerName = value.slice(1, -1).trim();
+      const register = resolveRegToken(registerName);
+      if (!register) {
+        throw new AnalysisError(`Invalid register ${value}`, line);
+      }
+      basic.rs1 = register;
+      basic.imm = '0';
+      return;
+    }
+
+    if (isNumericLike(value)) {
+      const number = parseInt(value, 0);
+      if (number >= IMM_I_MIN && number <= IMM_I_MAX) {
+        basic.imm = value;
+        basic.rs1 = 'x0';
+        return;
+      }
+      basic.imm = value;
+      delete (basic as any).rs1;
+      return;
+    }
+
+    basic.imm = value;
+
+    if (
+      isStore &&
+      args.length === spec.operands.length + 1 &&
+      operandIndex === spec.operands.length - 1
+    ) {
+      basic.rs1 = resolveRegToken(args[spec.operands.length]);
+    }
   }
 
   private resolveLabels(nodes: InstructionNode[], symbols: SymbolTable) {

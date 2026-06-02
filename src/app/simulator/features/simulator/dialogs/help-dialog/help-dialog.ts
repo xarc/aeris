@@ -199,6 +199,8 @@ export class HelpDialog {
       name: 'auipc t1, imm',
       desc: 'Add Upper Immediate to PC: set t1 = PC + upper immediate',
     },
+
+    { name: 'ecall', desc: 'Environment Call: transfer control to the operating system (syscall)' },
   ];
 
   pseudoInstructions: any[] = [

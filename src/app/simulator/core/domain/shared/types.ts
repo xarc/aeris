@@ -282,7 +282,9 @@ export class Instruction {
 }
 export interface StateMutation {
   writtenRegisterIndex?: number | null;
+  previousRegisterValue?: number | null;
   writtenMemoryAddress?: number | null;
+  previousMemoryValue?: number | null;
   previousPc?: number;
   nextPc?: number;
   isSyscall?: boolean;

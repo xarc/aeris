@@ -1,6 +1,6 @@
 <div class="execute-section-container">
   <div class="splitter" #splitter>
-    <div class="text-segment" [style.flex-basis.%]="textPct">
+    <div class="text-segment" [style.flex-basis.%]="textSegmentPercent">
       <span class="title">
         <img class="icon-title" src="assets/icons/text-segment.svg" />
         Text Segment
@@ -23,7 +23,7 @@
         @if (canRun()) {
           <table class="text-segment-table table-scroll">
             <tbody class="text-segment-body">
-              @for (row of getTextSegment(); let index = $index; track index) {
+              @for (row of textSegmentRows; let index = $index; track index) {
                 <tr
                   [id]="'row-' + (PC_START + index * 4)"
                   [class.selected-row]="row.address === currentPc"
@@ -32,11 +32,11 @@
                   <td>{{ getHexAddresses(row.address) }}</td>
                   <td>{{ row.code }}</td>
                   <td>{{ row.basic }}</td>
-                  <td [matTooltip]="row.isPseudo && row.source ? 'Pseudo-instrução' : ''">
+                  <td [matTooltip]="row.isPseudo && row.source ? 'Pseudo-instruction' : ''">
                     {{ row.source }}
                   </td>
                 </tr>
-                @if (index !== getTextSegment().length - 1) {
+                @if (index !== textSegmentRows.length - 1) {
                   <tr>
                     <td colspan="4" class="line-space"><hr /></td>
                   </tr>
@@ -53,15 +53,15 @@
       role="separator"
       aria-orientation="horizontal"
       tabindex="0"
-      aria-valuemin="{{ minPct }}"
-      aria-valuemax="{{ 100 - minPct }}"
-      aria-valuenow="{{ textPct }}"
+      aria-valuemin="{{ minimumSplitPercent }}"
+      aria-valuemax="{{ 100 - minimumSplitPercent }}"
+      aria-valuenow="{{ textSegmentPercent }}"
       (pointerdown)="onResizerPointerDown($event)"
     >
       <div class="resizer-grip"></div>
     </div>
 
-    <div class="data-segment" [style.flex-basis.%]="dataPct">
+    <div class="data-segment" [style.flex-basis.%]="dataSegmentPercent">
       <span class="title">
         <img class="icon-title" src="assets/icons/data-segment.svg" />
         Data Segment
@@ -89,7 +89,7 @@
         @if (canRun()) {
           <table class="data-segment-table">
             <tbody class="data-segment-body">
-              @for (row of getDataSegment(); track row.address) {
+              @for (row of dataSegmentRows; track row.address) {
                 <tr [id]="'row-data-' + row.address">
                   <td>{{ getHexAddresses(row.address) }}</td>
                   <td [class.selected-row]="isDataCellSelected(row, 0)">

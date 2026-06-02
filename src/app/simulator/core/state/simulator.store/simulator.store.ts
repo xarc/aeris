@@ -10,9 +10,24 @@ import {
 import { ConstantsInit } from '../../domain/shared/constants';
 import { RiscvRegisters, RiscvState, SimulatorStateObject } from '../../domain/shared/types';
 
+type FullEntry = { kind: 'full'; state: SimulatorStateObject };
+type DeltaEntry = {
+  kind: 'delta';
+  previousPc: number;
+  registerIndex: number | null;
+  previousRegisterValue: number | null;
+  memoryAddress: number | null;
+  previousMemoryValue: number | null;
+};
+type HistoryEntry = FullEntry | DeltaEntry;
+
 const AUTOSAVE_ENABLED_KEY = 'autosave.enabled';
-const AUTOSAVE_INTERVAL_MS = 2 * 60 * 1000; // 2 minutos
+const AUTOSAVE_INTERVAL_MS = 1 * 60 * 1000; // 1 minuto
 const AUTOSAVE_KEY = 'rv-sim.autosave.source';
+const INSTRUCTIONS_PER_TICK_KEY = 'simulator.instructionsPerTick';
+const DEFAULT_INSTRUCTIONS_PER_TICK = 1000;
+const MS_BETWEEN_TICKS_KEY = 'simulator.msBetweenTicks';
+const DEFAULT_MS_BETWEEN_TICKS = 0;
 
 const INITIAL_STATE: SimulatorState = {
   source: { text: '.data\n\n.text\n' },
@@ -22,6 +37,7 @@ const INITIAL_STATE: SimulatorState = {
   endReached: false,
   hasUndo: false,
   errorMessage: null,
+  errorLine: null,
   selectedTabIndex: 0,
   viewOptions: {
     isHexAddresses: true,
@@ -49,6 +65,7 @@ function computeGuards(state: SimulatorState): SimulatorGuards {
     canStep: canExecute,
     canUndo: state.hasUndo && !isBusy,
     canReset: isAssembled && !isBusy,
+    canStop: state.phase === 'running',
     canHelp: true,
   };
 }
@@ -102,14 +119,17 @@ export class SimulatorStore {
   public readonly canStep$ = this.vm$.pipe(map((vm) => vm.guards.canStep));
   public readonly canUndo$ = this.vm$.pipe(map((vm) => vm.guards.canUndo));
   public readonly canReset$ = this.vm$.pipe(map((vm) => vm.guards.canReset));
+  public readonly canStop$ = this.vm$.pipe(map((vm) => vm.guards.canStop));
 
   private readonly _helpOpen = new BehaviorSubject<boolean>(false);
   readonly helpOpen$ = this._helpOpen.asObservable();
 
-  private history: SimulatorStateObject[] = [];
+  private history: HistoryEntry[] = [];
   private autosaveSub?: Subscription;
 
   private autosaveEnabled = true;
+  private instructionsPerTick = DEFAULT_INSTRUCTIONS_PER_TICK;
+  private msBetweenTicks = DEFAULT_MS_BETWEEN_TICKS;
 
   constructor() {
     const savedSource = localStorage.getItem(AUTOSAVE_KEY);
@@ -123,6 +143,16 @@ export class SimulatorStore {
 
     const savedAutosave = localStorage.getItem(AUTOSAVE_ENABLED_KEY);
     this.autosaveEnabled = savedAutosave !== 'false';
+
+    const savedInstructionsPerTick = Number(localStorage.getItem(INSTRUCTIONS_PER_TICK_KEY));
+    if (savedInstructionsPerTick > 0) {
+      this.instructionsPerTick = savedInstructionsPerTick;
+    }
+
+    const savedMsBetweenTicks = localStorage.getItem(MS_BETWEEN_TICKS_KEY);
+    if (savedMsBetweenTicks !== null) {
+      this.msBetweenTicks = Number(savedMsBetweenTicks);
+    }
 
     this.startAutosave();
 
@@ -161,6 +191,7 @@ export class SimulatorStore {
       endReached: false,
       hasUndo: false,
       errorMessage: null,
+      errorLine: null,
     });
   }
 
@@ -177,10 +208,12 @@ export class SimulatorStore {
   }
 
   public setSimulation(simulationStateObject: SimulatorStateObject | null): void {
+    this.history = [];
     this.patch({
       simulation: simulationStateObject,
       phase: simulationStateObject ? 'assembled' : 'edited',
       endReached: false,
+      hasUndo: false,
     });
   }
 
@@ -189,6 +222,10 @@ export class SimulatorStore {
       simulation: sim,
       phase: 'paused',
     });
+  }
+
+  public tickSimulation(simulation: SimulatorStateObject): void {
+    this.patch({ simulation: simulation });
   }
 
   public getSimulation(): SimulatorStateObject | null {
@@ -217,10 +254,11 @@ export class SimulatorStore {
     this.patch({ hasUndo: flag });
   }
 
-  public setError(message: string | null): void {
+  public setError(message: string | null, line?: number): void {
     const subject = this.subject.value;
     this.patch({
       errorMessage: message,
+      errorLine: line ?? null,
       phase: message ? 'error' : subject.phase,
     });
   }
@@ -231,14 +269,70 @@ export class SimulatorStore {
   }
 
   public pushHistory(state: SimulatorStateObject): void {
-    this.history.push(structuredClone(state));
+    this.history.push({ kind: 'full', state: structuredClone(state) });
     this.patch({ hasUndo: true });
   }
 
-  public popHistory(): SimulatorStateObject | null {
-    const popped = this.history.pop() ?? null;
+  public pushDelta(
+    previousPc: number,
+    registerIndex: number | null,
+    previousRegisterValue: number | null,
+    memoryAddress: number | null,
+    previousMemoryValue: number | null,
+  ): void {
+    this.history.push({
+      kind: 'delta',
+      previousPc,
+      registerIndex,
+      previousRegisterValue,
+      memoryAddress,
+      previousMemoryValue,
+    });
+  }
+
+  public popHistory(currentSimulation?: SimulatorStateObject | null): SimulatorStateObject | null {
+    const entry = this.history.pop() ?? null;
+    if (!entry) {
+      this.patch({ hasUndo: false });
+      return null;
+    }
+
     this.patch({ hasUndo: this.history.length > 0 });
-    return popped;
+
+    if (entry.kind === 'full') {
+      return entry.state;
+    }
+
+    if (!currentSimulation?.riscv) {
+      return null;
+    }
+
+    const riscv = currentSimulation.riscv;
+    const newRegisters = { ...riscv.registers };
+    const newMemory = { ...riscv.memory };
+
+    if (entry.registerIndex !== null && entry.previousRegisterValue !== null) {
+      newRegisters[`x${entry.registerIndex}`] = entry.previousRegisterValue;
+    }
+
+    if (entry.memoryAddress !== null) {
+      newMemory[entry.memoryAddress] = entry.previousMemoryValue ?? 0;
+    }
+
+    return {
+      ...currentSimulation,
+      riscv: {
+        ...riscv,
+        pc: entry.previousPc,
+        registers: newRegisters,
+        memory: newMemory,
+        lastMutation: {
+          writtenRegisterIndex: entry.registerIndex,
+          writtenMemoryAddress: entry.memoryAddress,
+          previousPc: entry.previousPc,
+        },
+      },
+    };
   }
 
   public hasHistory(): boolean {
@@ -281,6 +375,7 @@ export class SimulatorStore {
       endReached: false,
       hasUndo: false,
       errorMessage: null,
+      errorLine: null,
       selectedTabIndex: 0,
       viewOptions: {
         isHexAddresses: true,
@@ -303,6 +398,24 @@ export class SimulatorStore {
 
   public isAutosaveEnabled(): boolean {
     return this.autosaveEnabled;
+  }
+
+  public getInstructionsPerTick(): number {
+    return this.instructionsPerTick;
+  }
+
+  public setInstructionsPerTick(value: number): void {
+    this.instructionsPerTick = value;
+    localStorage.setItem(INSTRUCTIONS_PER_TICK_KEY, String(value));
+  }
+
+  public getMsBetweenTicks(): number {
+    return this.msBetweenTicks;
+  }
+
+  public setMsBetweenTicks(value: number): void {
+    this.msBetweenTicks = value;
+    localStorage.setItem(MS_BETWEEN_TICKS_KEY, String(value));
   }
 
   public resetAll(): void {

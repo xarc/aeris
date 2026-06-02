@@ -43,6 +43,8 @@ export class Editor implements OnInit, OnDestroy {
         if (current !== newText) {
           this.editorInstance.setValue(newText);
         }
+
+        this.updateErrorMarker(state.errorLine, state.errorMessage);
       }
 
       this.code = newText;
@@ -69,9 +71,39 @@ export class Editor implements OnInit, OnDestroy {
   onEditorInit(editor: monaco.editor.IStandaloneCodeEditor) {
     this.editorInstance = editor;
     const theme = this.themeService.getTheme?.() ?? 'dark';
-    const monaco = (window as any).monaco;
-    monaco?.editor?.setTheme(theme === 'dark' ? 'rv32i-dark' : 'rv32i-light');
+    const monacoGlobal = (window as any).monaco;
+    monacoGlobal?.editor?.setTheme(theme === 'dark' ? 'rv32i-dark' : 'rv32i-light');
+
+    const snapshot = this.store.getSnapshot();
+    this.updateErrorMarker(snapshot.state.errorLine, snapshot.state.errorMessage);
+
     setTimeout(() => this.editorInstance?.layout(), 50);
+  }
+
+  private updateErrorMarker(line: number | null, message: string | null): void {
+    const monacoGlobal = (window as any).monaco;
+    const model = this.editorInstance?.getModel();
+    if (!monacoGlobal || !model) {
+      return;
+    }
+
+    if (line == null || !message) {
+      monacoGlobal.editor.setModelMarkers(model, 'assembler', []);
+      return;
+    }
+
+    monacoGlobal.editor.setModelMarkers(model, 'assembler', [
+      {
+        startLineNumber: line,
+        endLineNumber: line,
+        startColumn: 1,
+        endColumn: model.getLineMaxColumn(line),
+        message,
+        severity: monacoGlobal.MarkerSeverity.Error,
+      },
+    ]);
+
+    this.editorInstance?.revealLineInCenter(line);
   }
 
   @HostListener('window:resize')

@@ -17,6 +17,14 @@
           <mat-icon class="nav-ico">code_blocks</mat-icon>
           <span class="nav-text">Editor</span>
         </button>
+        <button
+          class="nav-btn"
+          [class.active]="activeTab === 'performance'"
+          (click)="switchTab('performance')"
+        >
+          <mat-icon class="nav-ico">speed</mat-icon>
+          <span class="nav-text">Performance</span>
+        </button>
         <button class="nav-btn" [class.active]="activeTab === 'about'" (click)="switchTab('about')">
           <mat-icon class="nav-ico">info_outline</mat-icon>
           <span class="nav-text">About</span>
@@ -136,6 +144,45 @@
               </div>
             </div>
           </div> -->
+        </div>
+
+        <div class="tab-panel" [class.active]="activeTab === 'performance'">
+          <div class="section-group">
+            <span class="section-label">Execution</span>
+
+            <div class="setting-row">
+              <div class="setting-label">
+                <span class="name">Execution speed</span>
+                <span class="desc">Instructions executed per cycle. Higher values run faster but may reduce responsiveness.</span>
+              </div>
+
+              <div class="setting-control">
+                <app-select
+                  [options]="executionSpeedOptions"
+                  [(value)]="selectedInstructionsPerTick"
+                  width="160px"
+                  (valueChange)="onExecutionSpeedChange($event)"
+                ></app-select>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-label">
+                <span class="name">Delay between cycles (ms)</span>
+                <span class="desc">Controls how long the simulator waits between execution cycles.</span>
+              </div>
+
+              <div class="setting-control">
+                <app-slider
+                  [min]="0"
+                  [max]="500"
+                  [step]="10"
+                  [value]="msBetweenTicks"
+                  (valueChange)="onMsBetweenTicksChange($event)"
+                ></app-slider>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="tab-panel" [class.active]="activeTab === 'about'">

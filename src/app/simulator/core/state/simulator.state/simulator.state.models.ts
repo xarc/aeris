@@ -28,6 +28,7 @@ export interface SimulatorState {
   endReached: boolean;
   hasUndo: boolean;
   errorMessage: string | null;
+  errorLine: number | null;
   selectedTabIndex: number;
   viewOptions: ViewOptions;
 }
@@ -41,6 +42,7 @@ export interface SimulatorGuards {
   canStep: boolean;
   canUndo: boolean;
   canReset: boolean;
+  canStop: boolean;
   canHelp: boolean;
 }
 

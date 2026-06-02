@@ -43,9 +43,15 @@
     <div class="divider"></div>
 
     <div class="button-group">
-      <button (click)="runEntireProgram()" [disabled]="!(canRun$ | async)" matTooltip="Run">
-        <mat-icon><img class="logo" src="assets/icons/execute.svg" /></mat-icon>
-      </button>
+      @if (canStop$ | async) {
+        <button (click)="stopExecution()" matTooltip="Stop">
+          <mat-icon><img class="logo" src="assets/icons/stop.svg" /></mat-icon>
+        </button>
+      } @else {
+        <button (click)="runEntireProgram()" [disabled]="!(canRun$ | async)" matTooltip="Run">
+          <mat-icon><img class="logo" src="assets/icons/execute.svg" /></mat-icon>
+        </button>
+      }
 
       <button (click)="runOneStep()" [disabled]="!(canStep$ | async)" matTooltip="Run One Step">
         <mat-icon><img class="logo" src="assets/icons/redo.svg" /></mat-icon>
