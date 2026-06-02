@@ -22,7 +22,7 @@ export class TextSegmentBuilder {
       }
 
       if (raw.length === 1 && raw[0].endsWith(':')) {
-        symbols.define(raw[0].slice(0, -1), pc);
+        symbols.define(raw[0].slice(0, -1), pc, line.line);
         continue;
       }
 
@@ -97,7 +97,7 @@ export class TextSegmentBuilder {
 
     const basic: BasicInstruction = { opcode, args: [...args] };
 
-    const shortForm = this.tryBuildShortForm(opcode, args, basic);
+    const shortForm = this.tryBuildShortForm(opcode, args, basic, line);
     if (shortForm) {
       return basic;
     }
@@ -136,7 +136,12 @@ export class TextSegmentBuilder {
     }
   }
 
-  private tryBuildShortForm(opcode: string, args: string[], basic: BasicInstruction): boolean {
+  private tryBuildShortForm(
+    opcode: string,
+    args: string[],
+    basic: BasicInstruction,
+    line?: number,
+  ): boolean {
     if (opcode === 'jal' && args.length === 1) {
       basic.rd = 'x1';
       basic.imm = args[0];
@@ -146,7 +151,7 @@ export class TextSegmentBuilder {
 
     if (opcode === 'jalr' && args.length === 1) {
       basic.rd = 'x1';
-      basic.rs1 = resolveRegToken(args[0]);
+      basic.rs1 = resolveRegToken(args[0], line);
       basic.imm = '0';
       (basic as any).isPseudoShortForm = true;
       return true;
@@ -155,12 +160,12 @@ export class TextSegmentBuilder {
     if (opcode === 'jalr' && args.length === 2) {
       const parsed = parseMemToken(args[1]);
       if (parsed) {
-        basic.rd = resolveRegToken(args[0]);
-        basic.rs1 = resolveRegToken(parsed.rs1);
+        basic.rd = resolveRegToken(args[0], line);
+        basic.rs1 = resolveRegToken(parsed.rs1, line);
         basic.imm = parsed.imm;
       } else {
         basic.rd = 'x1';
-        basic.rs1 = resolveRegToken(args[0]);
+        basic.rs1 = resolveRegToken(args[0], line);
         basic.imm = args[1];
       }
       (basic as any).isPseudoShortForm = true;
@@ -182,7 +187,7 @@ export class TextSegmentBuilder {
     const value = args[operandIndex];
 
     if (operandType === 'rd' || operandType === 'rs1' || operandType === 'rs2') {
-      (basic as any)[operandType] = resolveRegToken(value);
+      (basic as any)[operandType] = resolveRegToken(value, line);
       return;
     }
 
@@ -214,7 +219,7 @@ export class TextSegmentBuilder {
     const parsed = parseMemToken(value);
     if (parsed) {
       basic.imm = parsed.imm;
-      basic.rs1 = resolveRegToken(parsed.rs1);
+      basic.rs1 = resolveRegToken(parsed.rs1, line);
       if (!/^-?\d/.test(value)) {
         (basic as any).isPseudoMemoryForm = true;
       }
@@ -225,7 +230,7 @@ export class TextSegmentBuilder {
 
     if (/^\(\s*\w+\s*\)$/.test(value)) {
       const registerName = value.slice(1, -1).trim();
-      const register = resolveRegToken(registerName);
+      const register = resolveRegToken(registerName, line);
       if (!register) {
         throw new AnalysisError(`Invalid register ${value}`, line);
       }
@@ -253,7 +258,7 @@ export class TextSegmentBuilder {
       args.length === spec.operands.length + 1 &&
       operandIndex === spec.operands.length - 1
     ) {
-      basic.rs1 = resolveRegToken(args[spec.operands.length]);
+      basic.rs1 = resolveRegToken(args[spec.operands.length], line);
     }
   }
 
@@ -272,7 +277,7 @@ export class TextSegmentBuilder {
         continue;
       }
 
-      const target = symbols.resolve(imm);
+      const target = symbols.resolve(imm, node.source.line);
       node.basic.imm = String(target - node.pc);
     }
   }
