@@ -24,26 +24,29 @@ export class AssembleUseCase {
       return;
     }
 
-    try {
-      this.store.setPhase('assembling');
+    this.store.setPhase('assembling');
 
-      const analyzer = new CodeAnalyzer();
-      const assembler = new Assembler();
-      const builder = new SimulationBuilder();
+    setTimeout(() => {
+      try {
+        const analyzer = new CodeAnalyzer();
+        const assembler = new Assembler();
+        const builder = new SimulationBuilder();
 
-      const analysisResult = analyzer.analyze(sourceCode);
-      const assemblyResult = assembler.assemble(analysisResult);
-      const initializedSimulation = builder.init(assemblyResult);
+        const analysisResult = analyzer.analyze(sourceCode);
+        const assemblyResult = assembler.assemble(analysisResult);
+        const initializedSimulation = builder.init(assemblyResult);
 
-      this.store.setSimulation(initializedSimulation);
-      this.store.setPhase('assembled');
-      this.store.setSelectedTab(1);
-
-      this.console.print('Assembly completed successfully');
-    } catch (error: any) {
-      const message = error?.message ?? 'Unknown assembly error';
-      this.console.print(message, 'error');
-      this.store.setError(message);
-    }
+        this.store.setSimulation(initializedSimulation);
+        this.store.setPhase('assembled');
+        this.store.setSelectedTab(1);
+        this.console.print('Assembly completed successfully');
+      } catch (error: any) {
+        const message = error?.message ?? 'Unknown assembly error';
+        const line: number | undefined = error?.line;
+        const consoleMessage = line != null ? `Line ${line}: ${message}` : message;
+        this.console.print(consoleMessage, 'error');
+        this.store.setError(message, line);
+      }
+    }, 0);
   }
 }

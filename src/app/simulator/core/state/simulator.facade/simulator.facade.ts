@@ -55,6 +55,10 @@ export class SimulatorFacade {
     return this.store.canReset$;
   }
 
+  get canStop$() {
+    return this.store.canStop$;
+  }
+
   get guardsSnapshot() {
     return this.store.getSnapshot().guards;
   }
@@ -122,6 +126,10 @@ export class SimulatorFacade {
 
   runEntireProgram(): void {
     this.runUseCase.runAll();
+  }
+
+  stopExecution(): void {
+    this.runUseCase.stop();
   }
 
   runOneStep(): void {

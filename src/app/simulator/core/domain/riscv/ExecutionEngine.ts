@@ -8,6 +8,113 @@ import { SyscallHandler } from './syscall/SyscallHandler';
 import { SyscallPort } from '../../ports/syscall.port/syscall.port';
 
 export class ExecutionEngine {
+  static async runBatch(
+    state: SimulatorStateObject,
+    syscallPort: SyscallPort,
+    maxCount: number,
+    startPc: number,
+    endPc: number,
+    shouldStop: () => boolean,
+    onAfterStep?: (
+      previousPc: number,
+      registerIndex: number | null,
+      previousRegisterValue: number | null,
+      memoryAddress: number | null,
+      previousMemoryValue: number | null,
+    ) => void,
+  ): Promise<SimulatorStateObject> {
+    if (!state.riscv) {
+      return state;
+    }
+
+    const pc = new ProgramCounter(state.riscv.pc);
+    const registers = new RegisterFile(state.riscv.registers);
+    const memory = Memory.fromRecord(state.riscv.memory);
+    const cpu = new CPU({ pc, registers, memory });
+
+    let lastMutation = state.riscv.lastMutation ?? null;
+
+    for (let i = 0; i < maxCount; i++) {
+      if (shouldStop()) {
+        break;
+      }
+
+      const currentPc = pc.get();
+      if (currentPc < startPc || currentPc >= endPc) {
+        break;
+      }
+
+      const mutation = cpu.step();
+      lastMutation = mutation;
+
+      if (onAfterStep && !mutation.isSyscall) {
+        onAfterStep(
+          currentPc,
+          mutation.writtenRegisterIndex ?? null,
+          mutation.previousRegisterValue ?? null,
+          mutation.writtenMemoryAddress ?? null,
+          mutation.previousMemoryValue ?? null,
+        );
+      }
+
+      if (mutation.isSyscall) {
+        const syscallCode = registers.read(17);
+        const domainResult = SyscallHandler.handle(
+          syscallCode,
+          registers,
+          memory,
+          state.analysis.data,
+        );
+        const adapterResult = await syscallPort.execute(domainResult.effect);
+
+        if (adapterResult.newRegisters) {
+          for (const register in adapterResult.newRegisters) {
+            const index = RegFile[register as keyof typeof RegFile].value;
+            registers.write(index, adapterResult.newRegisters[register]);
+          }
+        }
+
+        if (domainResult.effect.kind === 'exit') {
+          return {
+            ...state,
+            riscv: {
+              pc: pc.get(),
+              registers: registers.toObject(),
+              memory: memory.toRecord(),
+              lastMutation: mutation,
+              halted: true,
+            },
+          };
+        }
+
+        if (
+          domainResult.effect.kind === 'read' &&
+          domainResult.effect.type === 'string' &&
+          adapterResult.input
+        ) {
+          const { address, maxLength } = domainResult.effect;
+          const trimmed = adapterResult.input.slice(0, maxLength - 1);
+          for (let j = 0; j < trimmed.length; j++) {
+            memory.writeU8(address + j, trimmed.charCodeAt(j));
+          }
+          memory.writeU8(address + trimmed.length, 0);
+        }
+
+        break;
+      }
+    }
+
+    return {
+      ...state,
+      riscv: {
+        pc: pc.get(),
+        registers: registers.toObject(),
+        memory: memory.toRecord(),
+        lastMutation,
+      },
+    };
+  }
+
   static async run(
     state: SimulatorStateObject,
     syscallPort: SyscallPort,

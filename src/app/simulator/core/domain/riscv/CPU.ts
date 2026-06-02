@@ -51,7 +51,9 @@ export class CPU {
     const previousPc = pc;
 
     let writtenRegisterIndex: number | null = null;
+    let previousRegisterValue: number | null = null;
     let writtenMemoryAddress: number | null = null;
+    let previousMemoryValue: number | null = null;
 
     const instWord = this.context.memory.readWord(pc) >>> 0;
     const inst = decode(instWord);
@@ -125,6 +127,7 @@ export class CPU {
     if (control.memWrite && control.storeKind) {
       const address = aluResult;
       writtenMemoryAddress = address;
+      previousMemoryValue = this.context.memory.readWord(address);
 
       switch (control.storeKind) {
         case 'SB':
@@ -142,6 +145,7 @@ export class CPU {
     const pcPlus4 = this.context.pc.plus4();
 
     if (control.regWrite && inst.rd !== 0) {
+      previousRegisterValue = this.context.registers.read(inst.rd);
       let writeBack: number;
 
       if (control.memRead) {
@@ -181,7 +185,9 @@ export class CPU {
 
     return {
       writtenRegisterIndex,
+      previousRegisterValue,
       writtenMemoryAddress,
+      previousMemoryValue,
       previousPc,
       nextPc,
     };
