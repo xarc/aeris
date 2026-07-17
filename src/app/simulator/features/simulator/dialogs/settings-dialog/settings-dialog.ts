@@ -38,7 +38,7 @@ export class SettingsDialog implements OnInit {
 
   themeOptions: Array<{ label: string; value: Theme }> = [
     { label: 'Dark', value: 'dark' },
-    // { label: 'Light', value: 'light' },
+    { label: 'Light', value: 'light' },
   ];
 
   selectedInstructionsPerTick = 1000;

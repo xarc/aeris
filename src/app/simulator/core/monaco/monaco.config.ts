@@ -102,8 +102,12 @@ export const monacoConfig: NgxMonacoEditorConfig = {
         { token: 'registers', foreground: '#795548' },
       ],
       colors: {
-        'editor.background': '#ffffff',
-        'editor.foreground': '#1e1e1e',
+        'editor.background': '#d5d5d5',
+        'editor.foreground': '#1f1f1f',
+        // o tema base "vs" desenha uma borda clara na linha do cursor, que
+        // fica visível como contorno branco sobre o fundo cinza
+        'editor.lineHighlightBorder': '#00000000',
+        'editor.lineHighlightBackground': '#00000010',
       },
     });
 
