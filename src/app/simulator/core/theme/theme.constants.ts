@@ -32,36 +32,31 @@ export const THEMES: Record<Theme, Record<string, string>> = {
     '--p2-rgb': '238,98,36',
     '--p3-rgb': '240,110,41',
     '--p4-rgb': '243,122,46',
+
+    '--pseudo': '#F06E29',
   },
 
-  // No tema escuro, s1→s7 vai do mais escuro ao mais claro e t1→t7 do menor ao
-  // maior contraste com a superfície; no claro as escalas se invertem mantendo
-  // a mesma semântica (s1 = superfície principal, t6/t7 = texto principal).
   light: {
-    '--s1': '#DEDEDE',
-    '--s2': '#D5D5D5',
-    '--s3': '#C7C7C7',
-    '--s4': '#B5B5B5',
-    '--s5': '#878787',
-    '--s6': '#5E5E5E',
-    '--s7': '#454545',
+    '--s1': '#BCBCBC',
+    '--s2': '#B1B1B1',
+    '--s3': '#A1A1A1',
+    '--s4': '#8F8F8F',
+    '--s5': '#6A6A6A',
+    '--s6': '#474747',
+    '--s7': '#333333',
 
-    '--s3-rgb': '199,199,199',
-    '--s4-rgb': '181,181,181',
+    '--s3-rgb': '161,161,161',
+    '--s4-rgb': '143,143,143',
 
-    // t1 é o texto sobre botões laranja (preto nos dois temas); t2/t3 são
-    // fundos de hover (levemente mais escuros que s1/s2); t4 é o cinza
-    // neutro de placeholders e badges.
+
     '--t1': '#000000',
-    '--t2': '#CBCBCB',
-    '--t3': '#C8C8C8',
-    '--t4': '#808080',
+    '--t2': '#A7A7A7',
+    '--t3': '#A4A4A4',
+    '--t4': '#646464',
     '--t5': '#4A4A4A',
     '--t6': '#1F1F1F',
     '--t7': '#000000',
 
-    // p5–p7 escurecem (em vez de clarear) para manterem contraste como
-    // texto/fundo sobre superfícies claras.
     '--p1': '#E35C1F',
     '--p2': '#EE6224',
     '--p3': '#F06E29',
@@ -74,6 +69,8 @@ export const THEMES: Record<Theme, Record<string, string>> = {
     '--p2-rgb': '238,98,36',
     '--p3-rgb': '240,110,41',
     '--p4-rgb': '243,122,46',
+
+    '--pseudo': '#A83D10',
   },
 };
 

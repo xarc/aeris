@@ -28,13 +28,12 @@
                   [id]="'row-' + (PC_START + index * 4)"
                   [class.selected-row]="row.address === currentPc"
                   [class.pseudo-row]="row.isPseudo"
+                  [matTooltip]="row.isPseudo && row.source ? 'Pseudo-instruction' : ''"
                 >
                   <td>{{ getHexAddresses(row.address) }}</td>
                   <td>{{ row.code }}</td>
                   <td>{{ row.basic }}</td>
-                  <td [matTooltip]="row.isPseudo && row.source ? 'Pseudo-instruction' : ''">
-                    {{ row.source }}
-                  </td>
+                  <td>{{ row.source }}</td>
                 </tr>
                 @if (index !== textSegmentRows.length - 1) {
                   <tr>

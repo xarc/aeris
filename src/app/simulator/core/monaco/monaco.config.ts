@@ -93,19 +93,17 @@ export const monacoConfig: NgxMonacoEditorConfig = {
       base: 'vs',
       inherit: true,
       rules: [
-        { token: 'instructions', foreground: '#005f6a' },
-        { token: 'identifier', foreground: '#1e1e1e' },
-        { token: 'label', foreground: '#3a7fc1' },
-        { token: 'directives', foreground: '#7a3e74' },
-        { token: 'string', foreground: '#008000' },
-        { token: 'comment', foreground: '#6a9955' },
-        { token: 'registers', foreground: '#795548' },
+        { token: 'instructions', foreground: '#0e7d89' },
+        { token: 'identifier', foreground: '#1c1c1c' },
+        { token: 'label', foreground: '#2568b3' },
+        { token: 'directives', foreground: '#8a3d80' },
+        { token: 'string', foreground: '#188a18' },
+        { token: 'comment', foreground: '#6b8f52' },
+        { token: 'registers', foreground: '#9c5a2c' },
       ],
       colors: {
-        'editor.background': '#d5d5d5',
-        'editor.foreground': '#1f1f1f',
-        // o tema base "vs" desenha uma borda clara na linha do cursor, que
-        // fica visível como contorno branco sobre o fundo cinza
+        'editor.background': '#c8c8c8',
+        'editor.foreground': '#1c1c1c',
         'editor.lineHighlightBorder': '#00000000',
         'editor.lineHighlightBackground': '#00000010',
       },
