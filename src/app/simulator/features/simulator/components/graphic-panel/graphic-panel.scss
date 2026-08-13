@@ -87,7 +87,7 @@
 }
 
 .panel-body {
-  padding: 10px;
+  padding: 0px;
 }
 
 .pixel-grid {
@@ -104,6 +104,6 @@
 }
 
 .pixel-cell {
-  background-color: transparent;
+  background-color: #000000;
   box-shadow: -0.5px -0.5px 0 0 $s3 inset;
 }
