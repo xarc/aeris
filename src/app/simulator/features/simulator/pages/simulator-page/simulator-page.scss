@@ -22,7 +22,7 @@
   flex-wrap: nowrap;
   gap: 12px;
   flex: 1 1 auto;
-  min-height: 0;
+  min-height: 160px;
   overflow-x: auto;
   overflow-y: hidden;
 }
@@ -36,38 +36,21 @@
   overflow: hidden;
 }
 
-.right {
-  flex: 0 0 340px;
-  min-width: 340px;
+.vertical-split {
+  flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-}
-
-app-console {
-  display: block;
-}
-
-.vertical-split {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
   gap: 4px;
 }
 
-.workspace {
-  min-height: 160px;
-  overflow: hidden;
+.edit-execute {
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
-}
-
-.console-container {
-  flex: 1;
-  min-height: 100px;
+  flex-direction: column;
   overflow: hidden;
-  padding: 2px;
 }
 
 .resizer-wrapper {
@@ -95,6 +78,119 @@ app-console {
 }
 
 .resizer-grip {
+  width: 36px;
+  height: 3px;
+  border-radius: 3px;
+  background: $s6;
+}
+
+.console-container {
+  flex: 1;
+  min-height: 100px;
+  overflow: hidden;
+  padding: 2px;
+}
+
+app-console {
+  display: block;
+}
+
+.right {
+  flex: 0 0 340px;
+  min-width: 340px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.right.wide {
+  flex: 0 0 400px;
+  min-width: 400px;
+}
+
+.right app-registers {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.right app-graphic-panel {
+  flex: 0 0 auto;
+}
+
+// Panel-hidden layout — reproduces the pre-feature structure exactly
+// (console spans the full width below both edit/execute and registers).
+// Namespaced under `classic-*` so these rules never interact with the
+// panel-visible layout above.
+.classic-vertical-split {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  gap: 4px;
+}
+
+.classic-workspace {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-height: 160px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.classic-left {
+  flex: 1 1 auto;
+  min-width: 640px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.classic-right {
+  flex: 0 0 340px;
+  min-width: 340px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.classic-console-container {
+  flex: 1;
+  min-height: 100px;
+  overflow: hidden;
+  padding: 2px;
+}
+
+.classic-resizer-wrapper {
+  padding: 2px 0;
+}
+
+.classic-resizer-vertical {
+  height: 6px;
+  cursor: row-resize;
+  background: $s2;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 6px;
+}
+
+.classic-resizer-vertical:hover {
+  background: linear-gradient(0deg, $s4, $s4);
+}
+
+.classic-resizer-vertical:active {
+  background: linear-gradient(0deg, $s5, $s5);
+}
+
+.classic-resizer-grip {
   width: 36px;
   height: 3px;
   border-radius: 3px;
