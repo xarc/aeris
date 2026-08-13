@@ -21,6 +21,6 @@ export class GraphicPanelComponent {
   readonly rows = Array.from({ length: GRID_ROWS }, (_, index) => index);
 
   getCellColor(row: number, column: number): string {
-    return this.pixels?.[row]?.[column] ?? 'transparent';
+    return this.pixels?.[row]?.[column] ?? '#000000';
   }
 }
