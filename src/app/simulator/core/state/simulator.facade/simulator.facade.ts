@@ -9,6 +9,7 @@ import { AssembleUseCase } from '../../application/use-cases/assemble/AssembleUs
 import { DumpUseCase } from '../../application/use-cases/dump/DumpUseCase';
 import { RunProgramUseCase } from '../../application/use-cases/run/RunProgramUseCase';
 import { SettingsDialog } from '../../../features/simulator/dialogs/settings-dialog/settings-dialog';
+import { DatapathDialog } from '../../../features/simulator/dialogs/datapath-dialog/datapath-dialog';
 
 @Injectable({ providedIn: 'root' })
 export class SimulatorFacade {
@@ -164,6 +165,15 @@ export class SimulatorFacade {
       maxHeight: '90vh',
       autoFocus: false,
       panelClass: 'settings-dialog-panel',
+    });
+  }
+
+  datapath(): void {
+    this.dialog.open(DatapathDialog, {
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      autoFocus: false,
+      panelClass: 'datapath-dialog-panel',
     });
   }
 }

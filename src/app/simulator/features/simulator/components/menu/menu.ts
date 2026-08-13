@@ -97,6 +97,10 @@ export class Menu {
     this.facade.help();
   }
 
+  openDatapath(): void {
+    this.facade.datapath();
+  }
+
   openSettings(): void {
     this.facade.settings();
   }

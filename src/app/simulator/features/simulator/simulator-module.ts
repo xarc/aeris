@@ -9,6 +9,7 @@ import { Console } from './components/console/console';
 import { DumpFileDialog } from './dialogs/dump-file-dialog/dump-file-dialog';
 import { SettingsDialog } from './dialogs/settings-dialog/settings-dialog';
 import { HelpDialog } from './dialogs/help-dialog/help-dialog';
+import { DatapathDialog } from './dialogs/datapath-dialog/datapath-dialog';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -36,6 +37,7 @@ import { Slider } from './components/utils/slider/slider';
     Console,
     DumpFileDialog,
     HelpDialog,
+    DatapathDialog,
     Runtime,
     SettingsDialog,
     Select,

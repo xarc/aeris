@@ -1,0 +1,124 @@
+<section class="datapath-shell">
+  <app-dialog-header
+    icon="datapath"
+    title="RV32I Datapath"
+    description="Single-cycle datapath — see how the next instruction flows through the CPU"
+    (close)="close()"
+  ></app-dialog-header>
+
+  <div class="datapath-body">
+    <div class="instruction-bar">
+      <div class="instruction-info">
+        <span class="label">Next instruction</span>
+        @if (hasInstruction) {
+          <span class="instruction-text">{{ instructionText }}</span>
+          <span class="category-badge">{{ categoryLabel }}</span>
+        } @else {
+          <span class="instruction-text muted">No instruction — assemble and run a program</span>
+        }
+      </div>
+
+      <div class="controls">
+        <button class="btn-reset" type="button" (click)="reset()" [disabled]="isPlaying">
+          Reset
+        </button>
+        <button
+          class="btn-play"
+          type="button"
+          (click)="play()"
+          [disabled]="!hasInstruction || isPlaying"
+        >
+          @if (isPlaying) {
+            Running…
+          } @else {
+            ▶ Play
+          }
+        </button>
+      </div>
+    </div>
+
+    <div class="diagram-scroll">
+      <div class="diagram">
+        <svg class="wires" viewBox="0 0 1060 560" preserveAspectRatio="xMidYMid meet">
+          @for (edge of edges; track edge.id) {
+            <path
+              class="wire"
+              [class.loop]="edge.loop"
+              [class.active]="isEdgeActive(edge.id)"
+              [matTooltip]="tip(edge.id === 'pcupdate-pc' ? 'pcupdate' : edge.id)"
+              [attr.d]="edge.d"
+            />
+            @if (isEdgeActive(edge.id)) {
+              <g class="pulse">
+                <animateMotion dur="0.5s" fill="freeze" [attr.path]="edge.pulseD" />
+                <circle r="5" class="pulse-dot" />
+              </g>
+              @if (pulseValue(edge.id); as value) {
+                <text
+                  class="pulse-label"
+                  text-anchor="middle"
+                  [attr.x]="edge.labelX"
+                  [attr.y]="edge.labelY"
+                  [attr.dx]="edge.labelDx"
+                  [attr.dy]="edge.labelDy"
+                >{{ value }}</text>
+              }
+            }
+          }
+        </svg>
+
+        <div class="node pc" [class.active]="isNodeActive('pc')" [matTooltip]="tip('pc')">
+          <span class="node-title">PC</span>
+        </div>
+        <div class="node imem" [class.active]="isNodeActive('imem')">
+          <span class="node-title">Instruction<br />Memory</span>
+        </div>
+        <div
+          class="node control"
+          [class.active]="isNodeActive('control')"
+          [matTooltip]="tip('control')"
+        >
+          <span class="node-title">Control</span>
+        </div>
+        <div
+          class="node regfile"
+          [class.active]="isNodeActive('regfile')"
+          [matTooltip]="tip('regfile')"
+        >
+          <span class="node-title">Register<br />File</span>
+        </div>
+        <div class="node immgen" [class.active]="isNodeActive('immgen')">
+          <span class="node-title">Imm<br />Gen</span>
+        </div>
+        <div class="node alumux" [class.active]="isNodeActive('alumux')">
+          <span class="node-title">MUX</span>
+        </div>
+        <div class="node alu" [class.active]="isNodeActive('alu')" [matTooltip]="tip('alu')">
+          <span class="node-title">ALU</span>
+        </div>
+        <div class="node dmem" [class.active]="isNodeActive('dmem')" [matTooltip]="tip('dmem')">
+          <span class="node-title">Data<br />Memory</span>
+        </div>
+        <div
+          class="node wbmux"
+          [class.active]="isNodeActive('wbmux')"
+          [matTooltip]="tip('wbmux')"
+        >
+          <span class="node-title">MUX</span>
+        </div>
+        <div
+          class="node pcupdate"
+          [class.active]="isNodeActive('pcupdate')"
+          [matTooltip]="tip('pcupdate')"
+        >
+          <span class="node-title">Next PC</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span class="legend-item"><i class="dot idle"></i> Idle</span>
+      <span class="legend-item"><i class="dot active"></i> Active path</span>
+    </div>
+  </div>
+</section>
