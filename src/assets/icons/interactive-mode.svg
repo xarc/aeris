@@ -1,0 +1,14 @@
+<!-- Placeholder vector icon (game controller silhouette, mask-cut d-pad/buttons, tightly cropped viewBox for legibility at small sizes) — swap for final design when available. -->
+<svg width="32" height="20" viewBox="0 0 32 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<mask id="mask-interactive-mode" maskUnits="userSpaceOnUse" x="0" y="0" width="32" height="20">
+<rect width="32" height="20" fill="black"/>
+<rect x="3" y="5" width="26" height="10" rx="5" fill="white"/>
+<circle cx="8" cy="10" r="7" fill="white"/>
+<circle cx="24" cy="10" r="7" fill="white"/>
+<rect x="7" y="6.5" width="2" height="7" fill="black"/>
+<rect x="4.5" y="9" width="7" height="2" fill="black"/>
+<circle cx="22" cy="7.5" r="1.4" fill="black"/>
+<circle cx="27" cy="11.5" r="1.4" fill="black"/>
+</mask>
+<rect width="32" height="20" fill="white" mask="url(#mask-interactive-mode)"/>
+</svg>

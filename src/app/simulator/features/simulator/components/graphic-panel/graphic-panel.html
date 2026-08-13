@@ -1,0 +1,28 @@
+<div class="card">
+  <header class="panel-header">
+    <div class="panel-title-group">
+      <span class="panel-status-dot" aria-hidden="true"></span>
+      <h2 class="panel-title">Panel</h2>
+    </div>
+
+    <button
+      type="button"
+      class="interactive-mode-button"
+      disabled
+      matTooltip="Interactive Mode (coming soon)"
+      aria-label="Interactive Mode"
+    >
+      <mat-icon><img class="logo" src="assets/icons/interactive-mode.svg" /></mat-icon>
+    </button>
+  </header>
+
+  <div class="panel-body">
+    <div class="pixel-grid">
+      @for (row of rows; track row) {
+        @for (column of columns; track column) {
+          <div class="pixel-cell" [style.background-color]="getCellColor(row, column)"></div>
+        }
+      }
+    </div>
+  </div>
+</div>
