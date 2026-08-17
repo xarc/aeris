@@ -119,10 +119,7 @@ app-console {
   flex: 0 0 auto;
 }
 
-// Panel-hidden layout — reproduces the pre-feature structure exactly
-// (console spans the full width below both edit/execute and registers).
-// Namespaced under `classic-*` so these rules never interact with the
-// panel-visible layout above.
+// Panel-hidden layout 
 .classic-vertical-split {
   display: flex;
   flex-direction: column;
