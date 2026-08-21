@@ -1,8 +1,9 @@
 import { Injectable, NgZone } from '@angular/core';
 import { ExecutionEngine } from '../../../domain/riscv/ExecutionEngine';
 import { SimulationRunner } from '../../../domain/simulation/SimulationRunner';
+import { SimulatorStateObject } from '../../../domain/shared/types';
 import { SyscallPort } from '../../../ports/syscall.port/syscall.port';
-import { SimulatorStore } from '../../../state/simulator.store/simulator.store';
+import { KEYBOARD_REGISTER_ADDRESS, SimulatorStore } from '../../../state/simulator.store/simulator.store';
 
 @Injectable({ providedIn: 'root' })
 export class RunProgramUseCase {
@@ -42,6 +43,7 @@ export class RunProgramUseCase {
 
     let currentState = simulation;
     let animationFramePending = false;
+    let lastObservedKeyboardVersion = this.store.getKeyboardRegisterVersion();
 
     const scheduleRender = () => {
       if (animationFramePending) {
@@ -64,6 +66,12 @@ export class RunProgramUseCase {
             this.store.setHasUndo(this.store.hasHistory());
           });
           return;
+        }
+
+        const externalKeyboardVersion = this.store.getKeyboardRegisterVersion();
+        if (externalKeyboardVersion !== lastObservedKeyboardVersion) {
+          currentState = this.withKeyboardRegister(currentState, this.store.getKeyboardRegisterValue());
+          lastObservedKeyboardVersion = externalKeyboardVersion;
         }
 
         try {
@@ -148,6 +156,20 @@ export class RunProgramUseCase {
     if (riscv.pc >= endPc || riscv.halted) {
       this.store.setEndReached(true);
     }
+  }
+
+  private withKeyboardRegister(state: SimulatorStateObject, value: number): SimulatorStateObject {
+    if (!state.riscv) {
+      return state;
+    }
+
+    return {
+      ...state,
+      riscv: {
+        ...state.riscv,
+        memory: { ...state.riscv.memory, [KEYBOARD_REGISTER_ADDRESS]: value | 0 },
+      },
+    };
   }
 
   undo(): void {

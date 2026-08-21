@@ -29,6 +29,8 @@ const DEFAULT_INSTRUCTIONS_PER_TICK = 1000;
 const MS_BETWEEN_TICKS_KEY = 'simulator.msBetweenTicks';
 const DEFAULT_MS_BETWEEN_TICKS = 0;
 
+export const KEYBOARD_REGISTER_ADDRESS = 0xff010000 | 0;
+
 const INITIAL_STATE: SimulatorState = {
   source: { text: '.data\n\n.text\n' },
   phase: 'idle',
@@ -130,6 +132,8 @@ export class SimulatorStore {
   private autosaveEnabled = true;
   private instructionsPerTick = DEFAULT_INSTRUCTIONS_PER_TICK;
   private msBetweenTicks = DEFAULT_MS_BETWEEN_TICKS;
+  private keyboardRegisterValue = 0;
+  private keyboardRegisterVersion = 0;
 
   constructor() {
     const savedSource = localStorage.getItem(AUTOSAVE_KEY);
@@ -226,6 +230,36 @@ export class SimulatorStore {
 
   public tickSimulation(simulation: SimulatorStateObject): void {
     this.patch({ simulation: simulation });
+  }
+
+  public pokeMemoryWord(address: number, value: number): void {
+    const simulation = this.subject.value.simulation;
+    if (!simulation?.riscv) {
+      return;
+    }
+
+    this.patch({
+      simulation: {
+        ...simulation,
+        riscv: {
+          ...simulation.riscv,
+          memory: { ...simulation.riscv.memory, [address | 0]: value | 0 },
+        },
+      },
+    });
+  }
+
+  public setKeyboardRegisterValue(value: number): void {
+    this.keyboardRegisterValue = value | 0;
+    this.keyboardRegisterVersion++;
+  }
+
+  public getKeyboardRegisterValue(): number {
+    return this.keyboardRegisterValue;
+  }
+
+  public getKeyboardRegisterVersion(): number {
+    return this.keyboardRegisterVersion;
   }
 
   public getSimulation(): SimulatorStateObject | null {

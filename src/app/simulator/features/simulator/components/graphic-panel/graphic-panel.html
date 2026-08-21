@@ -8,8 +8,10 @@
     <button
       type="button"
       class="interactive-mode-button"
-      disabled
-      matTooltip="Interactive Mode (coming soon)"
+      [class.active]="interactiveMode"
+      [attr.aria-pressed]="interactiveMode"
+      (click)="toggleInteractiveMode()"
+      matTooltip="Interactive Mode"
       aria-label="Interactive Mode"
     >
       <mat-icon><img class="logo" src="assets/icons/interactive-mode.svg" /></mat-icon>
