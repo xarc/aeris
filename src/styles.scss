@@ -40,11 +40,6 @@ body {
   outline: none !important;
 }
 
-// Ícones SVG carregados via <img> têm fill branco fixo (feitos para o tema
-// escuro). No tema claro, inverte a luminância preservando o matiz — branco
-// vira preto e os ícones laranja (back/next) continuam laranja.
-// (o .dialog-icon fica de fora: o próprio componente já o recolore de
-// laranja via filter, que funciona nos dois temas)
 :root[data-theme='light'] img.logo,
 :root[data-theme='light'] img.icon-title,
 :root[data-theme='light'] .help-close img {

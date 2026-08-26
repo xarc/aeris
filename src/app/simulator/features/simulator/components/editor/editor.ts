@@ -46,10 +46,7 @@ export class Editor implements OnInit, OnDestroy {
       if (this.editorInstance) {
         this.updateErrorMarker(state.errorLine, state.errorMessage);
       }
-
-      // While a keystroke is still debouncing towards the store, the store's
-      // source text is stale (older than what's on screen). Applying it here
-      // would stomp on what the user is actively typing.
+      
       if (this.pendingEditCommit) {
         return;
       }
