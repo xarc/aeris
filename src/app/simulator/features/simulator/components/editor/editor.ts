@@ -1,7 +1,8 @@
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import * as monaco from 'monaco-editor';
 import { Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { debounceTime, takeUntil } from 'rxjs/operators';
+import { SimulatorFacade } from '../../../../core/state/simulator.facade/simulator.facade';
 import { SimulatorStore } from '../../../../core/state/simulator.store/simulator.store';
 import { ThemeService } from '../../../../core/theme/theme-service';
 
@@ -21,21 +22,38 @@ export class Editor implements OnInit, OnDestroy {
 
   code = '.data\n\n.text\n';
   private editorInstance?: monaco.editor.IStandaloneCodeEditor;
+  private pendingEditCommit = false;
 
   private readonly codeChanges$ = new Subject<string>();
   private readonly destroy$ = new Subject<void>();
 
   constructor(
     private readonly store: SimulatorStore,
+    private readonly facade: SimulatorFacade,
     private readonly themeService: ThemeService,
   ) {}
 
   ngOnInit(): void {
     this.codeChanges$
-      .pipe(debounceTime(150), distinctUntilChanged(), takeUntil(this.destroy$))
-      .subscribe((text) => this.store.setSourceText(text));
+      .pipe(debounceTime(150), takeUntil(this.destroy$))
+      .subscribe((text) => {
+        this.facade.stopExecution();
+        this.store.setSourceText(text);
+        this.pendingEditCommit = false;
+      });
 
     this.store.state$.pipe(takeUntil(this.destroy$)).subscribe((state) => {
+      if (this.editorInstance) {
+        this.updateErrorMarker(state.errorLine, state.errorMessage);
+      }
+
+      // While a keystroke is still debouncing towards the store, the store's
+      // source text is stale (older than what's on screen). Applying it here
+      // would stomp on what the user is actively typing.
+      if (this.pendingEditCommit) {
+        return;
+      }
+
       const newText = state.source.text ?? '';
 
       if (this.editorInstance) {
@@ -43,8 +61,6 @@ export class Editor implements OnInit, OnDestroy {
         if (current !== newText) {
           this.editorInstance.setValue(newText);
         }
-
-        this.updateErrorMarker(state.errorLine, state.errorMessage);
       }
 
       this.code = newText;
@@ -112,6 +128,7 @@ export class Editor implements OnInit, OnDestroy {
   }
 
   onCodeChange(): void {
+    this.pendingEditCommit = true;
     this.codeChanges$.next(this.code);
   }
 }

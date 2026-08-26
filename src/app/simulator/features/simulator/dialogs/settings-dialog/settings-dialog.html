@@ -152,6 +152,20 @@
 
             <div class="setting-row">
               <div class="setting-label">
+                <span class="name">Automatic speed</span>
+                <span class="desc">Let the simulator pick the execution speed and delay for you.</span>
+              </div>
+
+              <div class="setting-control">
+                <app-checkbox
+                  [checked]="autoSpeed"
+                  (checkedChange)="onAutoSpeedChange($event)"
+                ></app-checkbox>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-label">
                 <span class="name">Execution speed</span>
                 <span class="desc">Instructions executed per cycle. Higher values run faster but may reduce responsiveness.</span>
               </div>
@@ -161,6 +175,7 @@
                   [options]="executionSpeedOptions"
                   [(value)]="selectedInstructionsPerTick"
                   width="160px"
+                  [disabled]="autoSpeed"
                   (valueChange)="onExecutionSpeedChange($event)"
                 ></app-select>
               </div>
@@ -178,6 +193,7 @@
                   [max]="500"
                   [step]="10"
                   [value]="msBetweenTicks"
+                  [disabled]="autoSpeed"
                   (valueChange)="onMsBetweenTicksChange($event)"
                 ></app-slider>
               </div>

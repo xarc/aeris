@@ -18,7 +18,14 @@
     </button>
   </header>
 
-  <div class="panel-body">
+  <div
+    #panelBody
+    class="panel-body"
+    tabindex="0"
+    (keydown)="onKeyDown($event)"
+    (keyup)="onKeyUp($event)"
+    (blur)="onPanelBlur()"
+  >
     <div class="pixel-grid">
       @for (row of rows; track row) {
         @for (column of columns; track column) {

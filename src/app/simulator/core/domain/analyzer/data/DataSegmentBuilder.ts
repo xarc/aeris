@@ -114,7 +114,7 @@ export class DataSegmentBuilder {
         return [];
       }
       for (const value of rawValues) {
-        if (!/^-?\d+$/.test(value)) {
+        if (!/^-?\d+$/.test(value) && !/^0x[0-9a-fA-F]+$/.test(value)) {
           throw new AnalysisError(`"${value}" is not a valid integer number`, line);
         }
       }

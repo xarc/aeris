@@ -40,6 +40,11 @@ init_draw:
     sw t1, 0(t2)
 
 tick:
+    li   t6, 3000              # wait_loop counter (raise to slow the game down, lower to speed it up)
+wait_loop:
+    addi t6, t6, -1
+    blt  x0, t6, wait_loop
+
     bnez s10, game_over_blink
 
     lw t4, 0(t3)

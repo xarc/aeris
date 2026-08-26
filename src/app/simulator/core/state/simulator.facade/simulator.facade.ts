@@ -59,6 +59,10 @@ export class SimulatorFacade {
     return this.store.canStop$;
   }
 
+  get interactiveMode$() {
+    return this.store.interactiveMode$;
+  }
+
   get guardsSnapshot() {
     return this.store.getSnapshot().guards;
   }
@@ -139,6 +143,11 @@ export class SimulatorFacade {
   writeKeyboardRegister(code: number): void {
     this.store.pokeMemoryWord(KEYBOARD_REGISTER_ADDRESS, code);
     this.store.setKeyboardRegisterValue(code);
+  }
+
+  toggleInteractiveMode(): void {
+    const { state } = this.store.getSnapshot();
+    this.store.setInteractiveMode(!state.interactiveMode);
   }
 
   undoLastStep(): void {

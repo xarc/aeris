@@ -3,7 +3,16 @@ import { ExecutionEngine } from '../../../domain/riscv/ExecutionEngine';
 import { SimulationRunner } from '../../../domain/simulation/SimulationRunner';
 import { SimulatorStateObject } from '../../../domain/shared/types';
 import { SyscallPort } from '../../../ports/syscall.port/syscall.port';
-import { KEYBOARD_REGISTER_ADDRESS, SimulatorStore } from '../../../state/simulator.store/simulator.store';
+import {
+  KEYBOARD_REGISTER_ADDRESS,
+  SimulatorStore,
+} from '../../../state/simulator.store/simulator.store';
+
+const AUTO_CHUNK_MIN = 300;
+const AUTO_CHUNK_MAX = 20000;
+const AUTO_DELAY_MIN_MS = 0;
+const AUTO_DELAY_MAX_MS = 50;
+const AUTO_DELAY_SCALE = 100;
 
 @Injectable({ providedIn: 'root' })
 export class RunProgramUseCase {
@@ -44,6 +53,7 @@ export class RunProgramUseCase {
     let currentState = simulation;
     let animationFramePending = false;
     let lastObservedKeyboardVersion = this.store.getKeyboardRegisterVersion();
+    let autoChunk = AUTO_CHUNK_MIN;
 
     const scheduleRender = () => {
       if (animationFramePending) {
@@ -52,12 +62,21 @@ export class RunProgramUseCase {
       animationFramePending = true;
       requestAnimationFrame(() => {
         animationFramePending = false;
+        if (this.store.getSnapshot().state.phase !== 'running') {
+          return;
+        }
         this.store.tickSimulation(currentState);
       });
     };
 
     this.ngZone.runOutsideAngular(() => {
       const tick = async () => {
+        if (this.store.getSnapshot().state.phase !== 'running') {
+          return;
+        }
+
+        const isAuto = this.store.isAutoSpeedEnabled();
+
         const riscv = currentState.riscv;
         if (!riscv || riscv.pc < startPc || riscv.pc >= endPc || riscv.halted) {
           this.ngZone.run(() => {
@@ -70,15 +89,21 @@ export class RunProgramUseCase {
 
         const externalKeyboardVersion = this.store.getKeyboardRegisterVersion();
         if (externalKeyboardVersion !== lastObservedKeyboardVersion) {
-          currentState = this.withKeyboardRegister(currentState, this.store.getKeyboardRegisterValue());
+          currentState = this.withKeyboardRegister(
+            currentState,
+            this.store.getKeyboardRegisterValue(),
+          );
           lastObservedKeyboardVersion = externalKeyboardVersion;
         }
 
+        const chunkSize = isAuto ? autoChunk : this.store.getInstructionsPerTick();
+
+        let executedCount: number;
         try {
-          currentState = await ExecutionEngine.runBatch(
+          const result = await ExecutionEngine.runBatch(
             currentState,
             this.syscall,
-            this.store.getInstructionsPerTick(),
+            chunkSize,
             startPc,
             endPc,
             () => this._stopRequested,
@@ -97,8 +122,21 @@ export class RunProgramUseCase {
                 previousMemoryValue,
               ),
           );
+          currentState = result.state;
+          executedCount = result.executedCount;
         } catch (error: any) {
           this.ngZone.run(() => this.store.setError(error?.message ?? 'Unknown execution error'));
+          return;
+        }
+
+        if (isAuto) {
+          autoChunk =
+            executedCount >= chunkSize
+              ? Math.min(chunkSize * 2, AUTO_CHUNK_MAX)
+              : Math.max(AUTO_CHUNK_MIN, Math.floor(chunkSize / 2));
+        }
+
+        if (this.store.getSnapshot().state.phase !== 'running') {
           return;
         }
 
@@ -111,7 +149,14 @@ export class RunProgramUseCase {
         }
 
         scheduleRender();
-        setTimeout(tick, this.store.getMsBetweenTicks());
+
+        const delay = isAuto
+          ? Math.max(
+              AUTO_DELAY_MIN_MS,
+              AUTO_DELAY_MAX_MS - Math.floor(autoChunk / AUTO_DELAY_SCALE),
+            )
+          : this.store.getMsBetweenTicks();
+        setTimeout(tick, delay);
       };
 
       setTimeout(tick, 0);
