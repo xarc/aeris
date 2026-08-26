@@ -1,14 +1,21 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
+import { Subject, takeUntil } from 'rxjs';
 import { SimulatorFacade } from '../../../../core/state/simulator.facade/simulator.facade';
 import { SimulatorStore } from '../../../../core/state/simulator.store/simulator.store';
-import {
-  buildFramebufferGrid,
-  DEFAULT_PIXEL_COLOR,
-  FRAMEBUFFER_COLUMNS,
-  FRAMEBUFFER_ROWS,
-} from './framebuffer.util';
-import { keyEventToCode } from './keyboard.util';
 
+const FRAMEBUFFER_COLUMNS = 32;
+const FRAMEBUFFER_ROWS = 18;
+const FRAMEBUFFER_BASE_ADDRESS = 0xff000000 | 0;
+const DEFAULT_PIXEL_COLOR = '#000000';
 const HELD_KEY_WRITE_INTERVAL_MS = 50;
 
 @Component({
@@ -18,28 +25,52 @@ const HELD_KEY_WRITE_INTERVAL_MS = 50;
   styleUrl: './graphic-panel.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class GraphicPanelComponent implements OnDestroy {
+export class GraphicPanelComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('panelBody') private readonly panelBodyRef!: ElementRef<HTMLElement>;
+
   readonly columns = Array.from({ length: FRAMEBUFFER_COLUMNS }, (_, index) => index);
   readonly rows = Array.from({ length: FRAMEBUFFER_ROWS }, (_, index) => index);
 
   interactiveMode = false;
 
-  private pixels: string[][] = buildFramebufferGrid({});
-  private keydownListener: ((event: KeyboardEvent) => void) | null = null;
-  private keyupListener: ((event: KeyboardEvent) => void) | null = null;
+  private pixels: string[][] = this.buildFramebufferGrid({});
   private readonly heldKeyCodes: number[] = [];
   private heldKeyIntervalId: ReturnType<typeof setInterval> | null = null;
+  private readonly destroy$ = new Subject<void>();
 
   constructor(
     private readonly store: SimulatorStore,
     private readonly facade: SimulatorFacade,
     private readonly changeDetectorRef: ChangeDetectorRef,
-  ) {
-    this.store.state$.subscribe((state) => {
+  ) {}
+
+  ngOnInit(): void {
+    this.store.state$.pipe(takeUntil(this.destroy$)).subscribe((state) => {
       const memory = state.simulation?.riscv?.memory ?? {};
-      this.pixels = buildFramebufferGrid(memory);
+      this.pixels = this.buildFramebufferGrid(memory);
       this.changeDetectorRef.markForCheck();
     });
+  }
+
+  ngAfterViewInit(): void {
+    this.facade.interactiveMode$.pipe(takeUntil(this.destroy$)).subscribe((isOn) => {
+      const wasOn = this.interactiveMode;
+      this.interactiveMode = isOn;
+      this.changeDetectorRef.markForCheck();
+
+      if (isOn && !wasOn) {
+        this.panelBodyRef.nativeElement.focus();
+      } else if (!isOn && wasOn) {
+        this.releaseHeldKeys();
+        this.panelBodyRef.nativeElement.blur();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.stopHeldKeyInterval();
   }
 
   getCellColor(row: number, column: number): string {
@@ -47,50 +78,31 @@ export class GraphicPanelComponent implements OnDestroy {
   }
 
   toggleInteractiveMode(): void {
-    this.interactiveMode = !this.interactiveMode;
-
-    if (this.interactiveMode) {
-      this.attachKeyListeners();
-    } else {
-      this.detachKeyListeners();
-    }
+    this.facade.toggleInteractiveMode();
   }
 
-  ngOnDestroy(): void {
-    this.detachKeyListeners();
-  }
-
-  private attachKeyListeners(): void {
-    this.keydownListener = (event) => {
-      if (event.repeat) {
-        return;
-      }
-
-      const code = keyEventToCode(event);
-      this.markKeyHeld(code);
-      this.facade.writeKeyboardRegister(code);
-      this.ensureHeldKeyInterval();
-    };
-
-    this.keyupListener = (event) => {
-      this.markKeyReleased(keyEventToCode(event));
-    };
-
-    window.addEventListener('keydown', this.keydownListener);
-    window.addEventListener('keyup', this.keyupListener);
-  }
-
-  private detachKeyListeners(): void {
-    if (this.keydownListener) {
-      window.removeEventListener('keydown', this.keydownListener);
-      this.keydownListener = null;
+  onKeyDown(event: KeyboardEvent): void {
+    if (!this.interactiveMode || event.repeat) {
+      return;
     }
 
-    if (this.keyupListener) {
-      window.removeEventListener('keyup', this.keyupListener);
-      this.keyupListener = null;
-    }
+    event.preventDefault();
 
+    const code = event.keyCode;
+    this.markKeyHeld(code);
+    this.facade.writeKeyboardRegister(code);
+    this.ensureHeldKeyInterval();
+  }
+
+  onKeyUp(event: KeyboardEvent): void {
+    this.markKeyReleased(event.keyCode);
+  }
+
+  onPanelBlur(): void {
+    this.releaseHeldKeys();
+  }
+
+  private releaseHeldKeys(): void {
     this.heldKeyCodes.length = 0;
     this.stopHeldKeyInterval();
   }
@@ -135,5 +147,36 @@ export class GraphicPanelComponent implements OnDestroy {
 
     clearInterval(this.heldKeyIntervalId);
     this.heldKeyIntervalId = null;
+  }
+
+  private pixelToAddress(x: number, y: number): number {
+    return (FRAMEBUFFER_BASE_ADDRESS + (y * FRAMEBUFFER_COLUMNS + x) * 4) | 0;
+  }
+
+  private wordToColor(word: number): string {
+    const rgb = (word >>> 0) & 0xffffff;
+
+    if (rgb === 0) {
+      return DEFAULT_PIXEL_COLOR;
+    }
+
+    return `#${rgb.toString(16).padStart(6, '0')}`;
+  }
+
+  private buildFramebufferGrid(memory: Record<number, number>): string[][] {
+    const grid: string[][] = [];
+
+    for (let y = 0; y < FRAMEBUFFER_ROWS; y++) {
+      const row: string[] = [];
+
+      for (let x = 0; x < FRAMEBUFFER_COLUMNS; x++) {
+        const word = memory[this.pixelToAddress(x, y)] ?? 0;
+        row.push(this.wordToColor(word));
+      }
+
+      grid.push(row);
+    }
+
+    return grid;
   }
 }

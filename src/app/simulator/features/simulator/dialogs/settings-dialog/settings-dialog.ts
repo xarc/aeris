@@ -22,6 +22,7 @@ export class SettingsDialog implements OnInit {
     this.autosave = this.store.isAutosaveEnabled();
     this.selectedInstructionsPerTick = this.store.getInstructionsPerTick();
     this.msBetweenTicks = this.store.getMsBetweenTicks();
+    this.autoSpeed = this.store.isAutoSpeedEnabled();
   }
 
   version = packageJson.version;
@@ -43,6 +44,7 @@ export class SettingsDialog implements OnInit {
 
   selectedInstructionsPerTick = 1000;
   msBetweenTicks = 0;
+  autoSpeed = true;
 
   executionSpeedOptions: Array<{ label: string; value: number }> = [
     { label: 'Slow (100)', value: 100 },
@@ -85,10 +87,15 @@ export class SettingsDialog implements OnInit {
     this.msBetweenTicks = value;
   }
 
+  onAutoSpeedChange(value: boolean): void {
+    this.autoSpeed = value;
+  }
+
   saveSettings(): void {
     this.store.setAutosaveEnabled(this.autosave);
     this.store.setInstructionsPerTick(this.selectedInstructionsPerTick);
     this.store.setMsBetweenTicks(this.msBetweenTicks);
+    this.store.setAutoSpeedEnabled(this.autoSpeed);
     this.themeService.setTheme(this.selectedTheme as Theme);
 
     this.dialogRef.close({

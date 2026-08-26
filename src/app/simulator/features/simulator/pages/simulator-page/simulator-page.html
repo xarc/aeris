@@ -4,55 +4,31 @@
     (toggleGraphicPanel)="onToggleGraphicPanel()"
   ></app-menu>
 
-  @if (graphicPanelVisible) {
-    <div class="workspace">
-      <div class="left">
-        <div class="vertical-split resize-scope">
-          <div class="edit-execute" [style.flex-basis.%]="workspaceHeightPercent">
-            <app-runtime></app-runtime>
-          </div>
+  <div
+    class="workspace-grid resize-scope"
+    [class.panel-mode]="graphicPanelVisible"
+    [style.grid-template-rows]="workspaceHeightPercent + '% auto 1fr'"
+  >
+    <div class="pane-editor">
+      <app-runtime></app-runtime>
+    </div>
 
-          <div class="resizer-wrapper">
-            <div class="resizer-vertical" (pointerdown)="onVerticalResizerDown($event)">
-              <div class="resizer-grip"></div>
-            </div>
-          </div>
-
-          <div class="console-container">
-            <app-console></app-console>
-          </div>
-        </div>
-      </div>
-
-      <div class="right" [class.wide]="graphicPanelVisible">
-        <app-registers></app-registers>
-
-        @if (graphicPanelVisible) {
-          <app-graphic-panel></app-graphic-panel>
-        }
+    <div class="pane-resizer">
+      <div class="resizer-vertical" (pointerdown)="onVerticalResizerDown($event)">
+        <div class="resizer-grip"></div>
       </div>
     </div>
-  } @else {
-    <div class="classic-vertical-split resize-scope">
-      <div class="classic-workspace" [style.flex-basis.%]="workspaceHeightPercent">
-        <div class="classic-left">
-          <app-runtime></app-runtime>
-        </div>
 
-        <div class="classic-right">
-          <app-registers></app-registers>
-        </div>
-      </div>
-
-      <div class="classic-resizer-wrapper">
-        <div class="classic-resizer-vertical" (pointerdown)="onVerticalResizerDown($event)">
-          <div class="classic-resizer-grip"></div>
-        </div>
-      </div>
-
-      <div class="classic-console-container">
-        <app-console></app-console>
-      </div>
+    <div class="pane-console">
+      <app-console></app-console>
     </div>
-  }
+
+    <div class="pane-right">
+      <app-registers></app-registers>
+
+      @if (graphicPanelVisible) {
+        <app-graphic-panel></app-graphic-panel>
+      }
+    </div>
+  </div>
 </section>

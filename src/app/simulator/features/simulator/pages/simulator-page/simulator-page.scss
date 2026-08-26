@@ -17,44 +17,79 @@
   background: $s3;
 }
 
-.workspace {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 12px;
+.workspace-grid {
+  display: grid;
   flex: 1 1 auto;
   min-height: 160px;
+  gap: 4px 12px;
+  grid-template-columns: minmax(640px, 1fr) 340px;
+  grid-template-areas:
+    'editor registers'
+    'resizer resizer'
+    'console console';
   overflow-x: auto;
   overflow-y: hidden;
 }
 
-.left {
-  flex: 1 1 auto;
-  min-width: 640px;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+.workspace-grid.panel-mode {
+  grid-template-columns: minmax(640px, 1fr) 460px;
+  grid-template-areas:
+    'editor right'
+    'resizer right'
+    'console right';
 }
 
-.vertical-split {
-  flex: 1 1 auto;
+.pane-editor {
+  grid-area: editor;
   min-height: 0;
+  min-width: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  gap: 4px;
 }
 
-.edit-execute {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.resizer-wrapper {
+.pane-resizer {
+  grid-area: resizer;
   padding: 2px 0;
+}
+
+.pane-console {
+  grid-area: console;
+  min-height: 100px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 2px;
+}
+
+.pane-right {
+  grid-area: registers;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.workspace-grid.panel-mode .pane-right {
+  grid-area: right;
+}
+
+.pane-right app-registers {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.workspace-grid:not(.panel-mode) .pane-right app-registers {
+  flex: 1 1 auto;
+}
+
+.pane-right app-graphic-panel {
+  flex: 0 0 auto;
+}
+
+app-console {
+  display: block;
 }
 
 .resizer-vertical {
@@ -78,116 +113,6 @@
 }
 
 .resizer-grip {
-  width: 36px;
-  height: 3px;
-  border-radius: 3px;
-  background: $s6;
-}
-
-.console-container {
-  flex: 1;
-  min-height: 100px;
-  overflow: hidden;
-  padding: 2px;
-}
-
-app-console {
-  display: block;
-}
-
-.right {
-  flex: 0 0 340px;
-  min-width: 340px;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  overflow: hidden;
-}
-
-.right.wide {
-  flex: 0 0 460px;
-  min-width: 460px;
-}
-
-.right app-registers {
-  flex: 1 1 0;
-  min-height: 0;
-}
-
-.right app-graphic-panel {
-  flex: 0 0 auto;
-}
-
-// Panel-hidden layout 
-.classic-vertical-split {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-  gap: 4px;
-}
-
-.classic-workspace {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 12px;
-  flex: 1 1 auto;
-  min-height: 160px;
-  overflow-x: auto;
-  overflow-y: hidden;
-}
-
-.classic-left {
-  flex: 1 1 auto;
-  min-width: 640px;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.classic-right {
-  flex: 0 0 340px;
-  min-width: 340px;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.classic-console-container {
-  flex: 1;
-  min-height: 100px;
-  overflow: hidden;
-  padding: 2px;
-}
-
-.classic-resizer-wrapper {
-  padding: 2px 0;
-}
-
-.classic-resizer-vertical {
-  height: 6px;
-  cursor: row-resize;
-  background: $s2;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 6px;
-}
-
-.classic-resizer-vertical:hover {
-  background: linear-gradient(0deg, $s4, $s4);
-}
-
-.classic-resizer-vertical:active {
-  background: linear-gradient(0deg, $s5, $s5);
-}
-
-.classic-resizer-grip {
   width: 36px;
   height: 3px;
   border-radius: 3px;

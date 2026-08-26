@@ -1,0 +1,61 @@
+name: Bug report
+description: Something in the simulator isn't working as expected
+labels: ["bug"]
+title: "[Bug]: "
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where does this happen?
+      options:
+        - Editor
+        - Assembler / analyzer (errors, encoding, directives)
+        - Execution (Run, Step, Undo)
+        - Graphic panel / Interactive mode
+        - Settings
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: Tell us what went wrong.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Assemble this program
+        2. Click Run
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: asm-program
+    attributes:
+      label: Assembly program (optional)
+      description: Paste the `.asm` code that triggers the bug, if there is one.
+      render: text
+  - type: input
+    id: browser
+    attributes:
+      label: Browser (optional)
+      placeholder: "Chrome 128, Firefox 130, ..."
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched [existing issues](https://github.com/xarc/aeris/issues) and didn't find this one already reported.
+          required: true
+        - label: I'm reasonably sure this is a simulator bug, not a mistake in my own assembly code.
+          required: true
