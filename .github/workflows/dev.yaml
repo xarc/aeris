@@ -17,12 +17,13 @@ jobs:
         with:
           node-version: 20
 
-      - name: Build Angular app to prod
-        run: npm install && npm run build:prod
+      - name: Build Angular app for develop preview
+        run: npm install && ng build --configuration=production --base-href=/aeris/develop/
 
-      - name: Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages Develop
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: dist/aeris/browser
-          branch: aeris-develop
+          branch: prod
+          target-folder: develop
           token: ${{ secrets.GIT_TOKEN }}
