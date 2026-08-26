@@ -32,6 +32,11 @@ button:disabled {
   color: $s6;
 }
 
+button.active {
+  outline: 2px dashed $p2;
+  outline-offset: 2px;
+}
+
 .button-card {
   display: flex;
   background: $t7;

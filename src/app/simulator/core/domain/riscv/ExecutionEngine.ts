@@ -7,6 +7,11 @@ import { CPU } from './CPU';
 import { SyscallHandler } from './syscall/SyscallHandler';
 import { SyscallPort } from '../../ports/syscall.port/syscall.port';
 
+export type RunBatchResult = {
+  state: SimulatorStateObject;
+  executedCount: number;
+};
+
 export class ExecutionEngine {
   static async runBatch(
     state: SimulatorStateObject,
@@ -22,9 +27,9 @@ export class ExecutionEngine {
       memoryAddress: number | null,
       previousMemoryValue: number | null,
     ) => void,
-  ): Promise<SimulatorStateObject> {
+  ): Promise<RunBatchResult> {
     if (!state.riscv) {
-      return state;
+      return { state, executedCount: 0 };
     }
 
     const pc = new ProgramCounter(state.riscv.pc);
@@ -33,6 +38,7 @@ export class ExecutionEngine {
     const cpu = new CPU({ pc, registers, memory });
 
     let lastMutation = state.riscv.lastMutation ?? null;
+    let executedCount = 0;
 
     for (let i = 0; i < maxCount; i++) {
       if (shouldStop()) {
@@ -46,6 +52,7 @@ export class ExecutionEngine {
 
       const mutation = cpu.step();
       lastMutation = mutation;
+      executedCount++;
 
       if (onAfterStep && !mutation.isSyscall) {
         onAfterStep(
@@ -76,14 +83,17 @@ export class ExecutionEngine {
 
         if (domainResult.effect.kind === 'exit') {
           return {
-            ...state,
-            riscv: {
-              pc: pc.get(),
-              registers: registers.toObject(),
-              memory: memory.toRecord(),
-              lastMutation: mutation,
-              halted: true,
+            state: {
+              ...state,
+              riscv: {
+                pc: pc.get(),
+                registers: registers.toObject(),
+                memory: memory.toRecord(),
+                lastMutation: mutation,
+                halted: true,
+              },
             },
+            executedCount,
           };
         }
 
@@ -105,13 +115,16 @@ export class ExecutionEngine {
     }
 
     return {
-      ...state,
-      riscv: {
-        pc: pc.get(),
-        registers: registers.toObject(),
-        memory: memory.toRecord(),
-        lastMutation,
+      state: {
+        ...state,
+        riscv: {
+          pc: pc.get(),
+          registers: registers.toObject(),
+          memory: memory.toRecord(),
+          lastMutation,
+        },
       },
+      executedCount,
     };
   }
 

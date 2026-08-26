@@ -203,8 +203,6 @@ hr {
   background-color: $s4;
 }
 
-// quando a próxima instrução é uma pseudo (texto laranja), o destaque
-// acompanha em tint laranja para não brigar com o cinza
 .pseudo-row.selected-row {
   background-color: rgba($p1-rgb, 0.3);
 }
