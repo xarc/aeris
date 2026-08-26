@@ -1,10 +1,17 @@
 # ÆRIS - Advanced Educational RISC-V Interactive Simulator
 
+[![Deploy](https://github.com/xarc/aeris/actions/workflows/prd.yaml/badge.svg)](https://github.com/xarc/aeris/actions/workflows/prd.yaml)
 ![GitHub repo size](https://img.shields.io/github/repo-size/xarc/aeris?label=Repo%20Size)
+![License](https://img.shields.io/github/license/xarc/aeris)
+![GitHub package.json version](https://img.shields.io/github/package-json/v/xarc/aeris)
 
-This project is a RISC-V processor implemented in Typescript using Angular, allowing the execution of RISC-V assembly code from the RV32I instruction set. It was developed with the aim of providing an affordable implementation, allowing students, enthusiasts and developers to experiment and learn about this popular processor architecture.
+A RISC-V (RV32I) processor implemented in TypeScript with Angular, built to let students, enthusiasts and developers write, assemble and run RISC-V assembly right in the browser.
 
-## Prerequisites
+Try it live at [xarc.org/aeris](https://xarc.org/aeris/), or check the [full documentation](https://github.com/xarc/aeris-docs).
+
+## 💻 Get started
+
+### Prerequisites
 
 Before you begin, make sure you have the following tools installed:
 
@@ -12,34 +19,28 @@ Before you begin, make sure you have the following tools installed:
 - [Angular CLI](https://angular.io/cli) (version 20.2.0)
 - [Git](https://git-scm.com/)
 
-## Installation
-
-### Clone the Repository
+### Install
 
 ```bash
 git clone https://github.com/xarc/aeris.git
 cd aeris
+npm install
 ```
 
-### Install Dependencies
+### Run
 
-1. Navigate to the `aeris` directory:
-   ```bash
-   cd aeris
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+```bash
+ng serve
+```
 
-## Run the Application
+Then open your browser at `http://localhost:4200`.
 
-1. Navigate to the `aeris` directory:
-   ```bash
-   cd aeris
-   ```
-2. Run the development server:
-   ```bash
-   ng serve
-   ```
-3. Open your browser and go to `http://localhost:4200`.
+## 🧱 Contribute
+
+Help us improve the simulator.
+
+Report an [issue](https://github.com/xarc/aeris/issues) you've found or check our [Contribution Guide](./CONTRIBUTING.md) to learn how to code in our project and open your own PRs to us.
+
+## 📄 License
+
+[MIT License](./LICENSE) © 2026-PRESENT XARC

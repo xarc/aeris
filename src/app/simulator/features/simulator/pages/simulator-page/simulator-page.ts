@@ -14,12 +14,18 @@ export class SimulatorPage {
   minimumWorkspacePercent = 30;
   maximumWorkspacePercent = 85;
 
+  graphicPanelVisible = false;
+
+  onToggleGraphicPanel(): void {
+    this.graphicPanelVisible = !this.graphicPanelVisible;
+  }
+
   onVerticalResizerDown(event: PointerEvent) {
     event.preventDefault();
 
     const startY = event.clientY;
     const startPct = this.workspaceHeightPercent;
-    const container = (event.target as HTMLElement).closest('.vertical-split') as HTMLElement;
+    const container = (event.target as HTMLElement).closest('.resize-scope') as HTMLElement;
 
     const height = container.getBoundingClientRect().height;
 
