@@ -1,5 +1,5 @@
 name: Deploy AERIS Develop
- 
+
 on:
   push:
     branches:
@@ -18,7 +18,7 @@ jobs:
           node-version: 20
 
       - name: Build Angular app for develop preview
-        run: npm install && ng build --configuration=production --base-href=/aeris/develop/
+        run: npm install && npm run build:dev
 
       - name: Deploy to GitHub Pages Develop
         uses: JamesIves/github-pages-deploy-action@v4
