@@ -68,6 +68,11 @@ export class SyscallHandler {
           effect: { kind: 'exit' },
         };
 
+      case SyscallCode.Sleep:
+        return {
+          effect: { kind: 'sleep', ms: Math.max(0, registers.read(10)) },
+        };
+
       default:
         return {
           effect: { kind: 'none' },

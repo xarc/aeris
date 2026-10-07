@@ -1,7 +1,10 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import packageJson from '../../../../../../../package.json';
-import { SimulatorStore } from '../../../../core/state/simulator.store/simulator.store';
+import {
+  CLOCK_UNLIMITED,
+  SimulatorStore,
+} from '../../../../core/state/simulator.store/simulator.store';
 import { ThemeService } from '../../../../core/theme/theme-service';
 import { Theme } from '../../../../core/theme/theme.types';
 
@@ -20,9 +23,7 @@ export class SettingsDialog implements OnInit {
     private themeService: ThemeService,
   ) {
     this.autosave = this.store.isAutosaveEnabled();
-    this.selectedInstructionsPerTick = this.store.getInstructionsPerTick();
-    this.msBetweenTicks = this.store.getMsBetweenTicks();
-    this.autoSpeed = this.store.isAutoSpeedEnabled();
+    this.selectedClockHz = this.store.getClockHz();
   }
 
   version = packageJson.version;
@@ -42,15 +43,17 @@ export class SettingsDialog implements OnInit {
     { label: 'Light', value: 'light' },
   ];
 
-  selectedInstructionsPerTick = 1000;
-  msBetweenTicks = 0;
-  autoSpeed = true;
+  selectedClockHz = CLOCK_UNLIMITED;
 
-  executionSpeedOptions: Array<{ label: string; value: number }> = [
-    { label: 'Slow (100)', value: 100 },
-    { label: 'Normal (1000)', value: 1000 },
-    { label: 'Fast (5000)', value: 5000 },
-    { label: 'Maximum (10000)', value: 10000 },
+  clockOptions: Array<{ label: string; value: number }> = [
+    { label: '1 Hz', value: 1 },
+    { label: '10 Hz', value: 10 },
+    { label: '100 Hz', value: 100 },
+    { label: '1 kHz', value: 1_000 },
+    { label: '10 kHz', value: 10_000 },
+    { label: '100 kHz', value: 100_000 },
+    { label: '1 MHz', value: 1_000_000 },
+    { label: 'Unlimited', value: CLOCK_UNLIMITED },
   ];
 
   ngOnInit() {
@@ -79,29 +82,19 @@ export class SettingsDialog implements OnInit {
   closeDialog() {
     this.dialogRef.close();
   }
-  onExecutionSpeedChange(value: number): void {
-    this.selectedInstructionsPerTick = value;
-  }
-
-  onMsBetweenTicksChange(value: number): void {
-    this.msBetweenTicks = value;
-  }
-
-  onAutoSpeedChange(value: boolean): void {
-    this.autoSpeed = value;
+  onClockChange(value: number): void {
+    this.selectedClockHz = Number(value);
   }
 
   saveSettings(): void {
     this.store.setAutosaveEnabled(this.autosave);
-    this.store.setInstructionsPerTick(this.selectedInstructionsPerTick);
-    this.store.setMsBetweenTicks(this.msBetweenTicks);
-    this.store.setAutoSpeedEnabled(this.autoSpeed);
+    this.store.setClockHz(this.selectedClockHz);
     this.themeService.setTheme(this.selectedTheme as Theme);
 
     this.dialogRef.close({
       autosave: this.autosave,
       theme: this.selectedTheme,
-      instructionsPerTick: this.selectedInstructionsPerTick,
+      clockHz: this.selectedClockHz,
     });
   }
 

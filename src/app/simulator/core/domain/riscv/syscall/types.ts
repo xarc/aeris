@@ -3,6 +3,7 @@ export type SyscallEffect =
   | { kind: 'read'; type: 'int' }
   | { kind: 'read'; type: 'string'; address: number; maxLength: number }
   | { kind: 'exit' }
+  | { kind: 'sleep'; ms: number }
   | { kind: 'none' };
 
 export type SyscallDomainResult = {

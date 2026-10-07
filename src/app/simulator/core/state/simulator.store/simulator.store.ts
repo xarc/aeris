@@ -67,12 +67,10 @@ class BoundedUndoStack<T> {
 const AUTOSAVE_ENABLED_KEY = 'autosave.enabled';
 const AUTOSAVE_INTERVAL_MS = 1 * 60 * 1000; // 1 minuto
 const AUTOSAVE_KEY = 'rv-sim.autosave.source';
-const INSTRUCTIONS_PER_TICK_KEY = 'simulator.instructionsPerTick';
-const DEFAULT_INSTRUCTIONS_PER_TICK = 1000;
-const MS_BETWEEN_TICKS_KEY = 'simulator.msBetweenTicks';
-const DEFAULT_MS_BETWEEN_TICKS = 0;
-const AUTO_SPEED_KEY = 'simulator.autoSpeed';
+const CLOCK_HZ_KEY = 'simulator.clockHz';
 const MAX_HISTORY_ENTRIES = 3000;
+
+export const CLOCK_UNLIMITED = 0;
 
 export const KEYBOARD_REGISTER_ADDRESS = 0xff010000 | 0;
 
@@ -180,9 +178,7 @@ export class SimulatorStore {
   private autosaveSub?: Subscription;
 
   private autosaveEnabled = true;
-  private instructionsPerTick = DEFAULT_INSTRUCTIONS_PER_TICK;
-  private msBetweenTicks = DEFAULT_MS_BETWEEN_TICKS;
-  private autoSpeedEnabled = true;
+  private clockHz = CLOCK_UNLIMITED;
   private keyboardRegisterValue = 0;
   private keyboardRegisterVersion = 0;
 
@@ -199,17 +195,10 @@ export class SimulatorStore {
     const savedAutosave = localStorage.getItem(AUTOSAVE_ENABLED_KEY);
     this.autosaveEnabled = savedAutosave !== 'false';
 
-    const savedInstructionsPerTick = Number(localStorage.getItem(INSTRUCTIONS_PER_TICK_KEY));
-    if (savedInstructionsPerTick > 0) {
-      this.instructionsPerTick = savedInstructionsPerTick;
+    const savedClockHz = Number(localStorage.getItem(CLOCK_HZ_KEY));
+    if (savedClockHz > 0) {
+      this.clockHz = savedClockHz;
     }
-
-    const savedMsBetweenTicks = localStorage.getItem(MS_BETWEEN_TICKS_KEY);
-    if (savedMsBetweenTicks !== null) {
-      this.msBetweenTicks = Number(savedMsBetweenTicks);
-    }
-
-    this.autoSpeedEnabled = localStorage.getItem(AUTO_SPEED_KEY) !== 'false';
 
     this.startAutosave();
 
@@ -494,31 +483,13 @@ export class SimulatorStore {
     return this.autosaveEnabled;
   }
 
-  public getInstructionsPerTick(): number {
-    return this.instructionsPerTick;
+  public getClockHz(): number {
+    return this.clockHz;
   }
 
-  public setInstructionsPerTick(value: number): void {
-    this.instructionsPerTick = value;
-    localStorage.setItem(INSTRUCTIONS_PER_TICK_KEY, String(value));
-  }
-
-  public getMsBetweenTicks(): number {
-    return this.msBetweenTicks;
-  }
-
-  public setMsBetweenTicks(value: number): void {
-    this.msBetweenTicks = value;
-    localStorage.setItem(MS_BETWEEN_TICKS_KEY, String(value));
-  }
-
-  public isAutoSpeedEnabled(): boolean {
-    return this.autoSpeedEnabled;
-  }
-
-  public setAutoSpeedEnabled(value: boolean): void {
-    this.autoSpeedEnabled = value;
-    localStorage.setItem(AUTO_SPEED_KEY, String(value));
+  public setClockHz(value: number): void {
+    this.clockHz = value;
+    localStorage.setItem(CLOCK_HZ_KEY, String(value));
   }
 
   public resetAll(): void {

@@ -406,6 +406,10 @@ export class HelpDialog {
       name: `Number ${SyscallCode.Exit}`,
       desc: 'Exit: terminates the program',
     },
+    {
+      name: `Number ${SyscallCode.Sleep}`,
+      desc: 'Sleep: pauses execution for the number of milliseconds in a0',
+    },
   ];
 
   get currentTab() {
