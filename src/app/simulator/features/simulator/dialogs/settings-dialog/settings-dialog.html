@@ -152,50 +152,17 @@
 
             <div class="setting-row">
               <div class="setting-label">
-                <span class="name">Automatic speed</span>
-                <span class="desc">Let the simulator pick the execution speed and delay for you.</span>
-              </div>
-
-              <div class="setting-control">
-                <app-checkbox
-                  [checked]="autoSpeed"
-                  (checkedChange)="onAutoSpeedChange($event)"
-                ></app-checkbox>
-              </div>
-            </div>
-
-            <div class="setting-row">
-              <div class="setting-label">
-                <span class="name">Execution speed</span>
-                <span class="desc">Instructions executed per cycle. Higher values run faster but may reduce responsiveness.</span>
+                <span class="name">Clock</span>
+                <span class="desc">Simulated processor frequency</span>
               </div>
 
               <div class="setting-control">
                 <app-select
-                  [options]="executionSpeedOptions"
-                  [(value)]="selectedInstructionsPerTick"
+                  [options]="clockOptions"
+                  [value]="selectedClockHz"
                   width="160px"
-                  [disabled]="autoSpeed"
-                  (valueChange)="onExecutionSpeedChange($event)"
+                  (valueChange)="onClockChange($event)"
                 ></app-select>
-              </div>
-            </div>
-
-            <div class="setting-row">
-              <div class="setting-label">
-                <span class="name">Delay between cycles (ms)</span>
-                <span class="desc">Controls how long the simulator waits between execution cycles.</span>
-              </div>
-
-              <div class="setting-control">
-                <app-slider
-                  [min]="0"
-                  [max]="500"
-                  [step]="10"
-                  [value]="msBetweenTicks"
-                  [disabled]="autoSpeed"
-                  (valueChange)="onMsBetweenTicksChange($event)"
-                ></app-slider>
               </div>
             </div>
           </div>

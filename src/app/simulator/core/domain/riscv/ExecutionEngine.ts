@@ -7,9 +7,12 @@ import { CPU } from './CPU';
 import { SyscallHandler } from './syscall/SyscallHandler';
 import { SyscallPort } from '../../ports/syscall.port/syscall.port';
 
+export type BatchWait = { kind: 'sleep'; ms: number };
+
 export type RunBatchResult = {
   state: SimulatorStateObject;
   executedCount: number;
+  wait: BatchWait | null;
 };
 
 export class ExecutionEngine {
@@ -29,7 +32,7 @@ export class ExecutionEngine {
     ) => void,
   ): Promise<RunBatchResult> {
     if (!state.riscv) {
-      return { state, executedCount: 0 };
+      return { state, executedCount: 0, wait: null };
     }
 
     const pc = new ProgramCounter(state.riscv.pc);
@@ -39,6 +42,7 @@ export class ExecutionEngine {
 
     let lastMutation = state.riscv.lastMutation ?? null;
     let executedCount = 0;
+    let wait: BatchWait | null = null;
 
     for (let i = 0; i < maxCount; i++) {
       if (shouldStop()) {
@@ -94,7 +98,12 @@ export class ExecutionEngine {
               },
             },
             executedCount,
+            wait: null,
           };
+        }
+
+        if (domainResult.effect.kind === 'sleep') {
+          wait = { kind: 'sleep', ms: domainResult.effect.ms };
         }
 
         if (
@@ -125,6 +134,7 @@ export class ExecutionEngine {
         },
       },
       executedCount,
+      wait,
     };
   }
 
