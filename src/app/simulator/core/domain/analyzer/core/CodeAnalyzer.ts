@@ -94,6 +94,8 @@ export class CodeAnalyzer {
         dataLines.push(line);
       } else if (mode === 'text') {
         textLines.push(line);
+      } else {
+        throw new AnalysisError(`"${token}" is not a valid directive`, line.line);
       }
     }
 

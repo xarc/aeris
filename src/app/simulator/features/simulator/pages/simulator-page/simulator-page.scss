@@ -17,61 +17,79 @@
   background: $s3;
 }
 
-.workspace {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 12px;
+.workspace-grid {
+  display: grid;
   flex: 1 1 auto;
-  min-height: 0;
+  min-height: 160px;
+  gap: 4px 12px;
+  grid-template-columns: minmax(640px, 1fr) 340px;
+  grid-template-areas:
+    'editor registers'
+    'resizer resizer'
+    'console console';
   overflow-x: auto;
   overflow-y: hidden;
 }
 
-.left {
-  flex: 1 1 auto;
-  min-width: 640px;
+.workspace-grid.panel-mode {
+  grid-template-columns: minmax(640px, 1fr) 460px;
+  grid-template-areas:
+    'editor right'
+    'resizer right'
+    'console right';
+}
+
+.pane-editor {
+  grid-area: editor;
   min-height: 0;
+  min-width: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
-.right {
-  flex: 0 0 340px;
-  min-width: 340px;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+.pane-resizer {
+  grid-area: resizer;
+  padding: 2px 0;
 }
 
-app-console {
-  display: block;
-}
-
-.vertical-split {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-  gap: 4px;
-}
-
-.workspace {
-  min-height: 160px;
-  overflow: hidden;
-  display: flex;
-}
-
-.console-container {
-  flex: 1;
+.pane-console {
+  grid-area: console;
   min-height: 100px;
+  min-width: 0;
   overflow: hidden;
   padding: 2px;
 }
 
-.resizer-wrapper {
-  padding: 2px 0;
+.pane-right {
+  grid-area: registers;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.workspace-grid.panel-mode .pane-right {
+  grid-area: right;
+}
+
+.pane-right app-registers {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.workspace-grid:not(.panel-mode) .pane-right app-registers {
+  flex: 1 1 auto;
+}
+
+.pane-right app-graphic-panel {
+  flex: 0 0 auto;
+}
+
+app-console {
+  display: block;
 }
 
 .resizer-vertical {

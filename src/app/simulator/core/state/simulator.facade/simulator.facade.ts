@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ConsolePort } from '../../ports/console.port/console.port';
-import { SimulatorStore } from '../simulator.store/simulator.store';
+import { KEYBOARD_REGISTER_ADDRESS, SimulatorStore } from '../simulator.store/simulator.store';
 import { FilePort } from '../../ports/file.port/file.port';
 import { MatDialog } from '@angular/material/dialog';
 import { HelpDialog } from '../../../features/simulator/dialogs/help-dialog/help-dialog';
@@ -57,6 +57,10 @@ export class SimulatorFacade {
 
   get canStop$() {
     return this.store.canStop$;
+  }
+
+  get interactiveMode$() {
+    return this.store.interactiveMode$;
   }
 
   get guardsSnapshot() {
@@ -134,6 +138,16 @@ export class SimulatorFacade {
 
   runOneStep(): void {
     this.runUseCase.step();
+  }
+
+  writeKeyboardRegister(code: number): void {
+    this.store.pokeMemoryWord(KEYBOARD_REGISTER_ADDRESS, code);
+    this.store.setKeyboardRegisterValue(code);
+  }
+
+  toggleInteractiveMode(): void {
+    const { state } = this.store.getSnapshot();
+    this.store.setInteractiveMode(!state.interactiveMode);
   }
 
   undoLastStep(): void {

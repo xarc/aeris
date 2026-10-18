@@ -1,4 +1,4 @@
-name: AERIS PROD GITHUB ACTIONS
+name: Deploy AERIS
 
 on:
   push:

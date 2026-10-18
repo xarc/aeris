@@ -203,6 +203,10 @@ hr {
   background-color: $s4;
 }
 
+.pseudo-row.selected-row {
+  background-color: rgba($p1-rgb, 0.3);
+}
+
 .buttons {
   display: flex;
   flex-direction: row;
@@ -294,7 +298,7 @@ select option {
 }
 
 .pseudo-row td {
-  color: $p3;
+  color: $pseudo;
   font-weight: 700;
 }
 

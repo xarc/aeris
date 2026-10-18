@@ -1,11 +1,12 @@
 {
   "name": "aeris",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
     "build:prod": "ng build --configuration=production --base-href=/aeris/",
+    "build:dev": "ng build --configuration=production --base-href=/aeris/develop/",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
