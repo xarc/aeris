@@ -2,7 +2,6 @@
 @use 'colors' as *;
 
 body {
-  color-scheme: light;
   background-color: $s3;
   margin: 0;
 }
@@ -41,8 +40,10 @@ body {
   outline: none !important;
 }
 
-:root {
-  --s3: $s3;
+:root[data-theme='light'] img.logo,
+:root[data-theme='light'] img.icon-title,
+:root[data-theme='light'] .help-close img {
+  filter: invert(1) hue-rotate(180deg);
 }
 
 .mdc-tooltip__surface {

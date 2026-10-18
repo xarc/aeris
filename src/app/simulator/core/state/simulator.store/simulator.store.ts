@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, map, interval, Subscription } from 'rxjs';
+import { BehaviorSubject, distinctUntilChanged, map, interval, Subscription } from 'rxjs';
 import {
   SimulatorState,
   SimulatorGuards,
@@ -21,13 +21,58 @@ type DeltaEntry = {
 };
 type HistoryEntry = FullEntry | DeltaEntry;
 
+class BoundedUndoStack<T> {
+  private readonly buffer: (T | undefined)[];
+  private start = 0;
+  private count = 0;
+
+  constructor(private readonly capacity: number) {
+    this.buffer = new Array(capacity);
+  }
+
+  get length(): number {
+    return this.count;
+  }
+
+  push(item: T): void {
+    const index = (this.start + this.count) % this.capacity;
+    this.buffer[index] = item;
+
+    if (this.count < this.capacity) {
+      this.count++;
+    } else {
+      this.start = (this.start + 1) % this.capacity;
+    }
+  }
+
+  pop(): T | undefined {
+    if (this.count === 0) {
+      return undefined;
+    }
+
+    this.count--;
+    const index = (this.start + this.count) % this.capacity;
+    const item = this.buffer[index];
+    this.buffer[index] = undefined;
+    return item;
+  }
+
+  clear(): void {
+    this.start = 0;
+    this.count = 0;
+    this.buffer.fill(undefined);
+  }
+}
+
 const AUTOSAVE_ENABLED_KEY = 'autosave.enabled';
 const AUTOSAVE_INTERVAL_MS = 1 * 60 * 1000; // 1 minuto
 const AUTOSAVE_KEY = 'rv-sim.autosave.source';
-const INSTRUCTIONS_PER_TICK_KEY = 'simulator.instructionsPerTick';
-const DEFAULT_INSTRUCTIONS_PER_TICK = 1000;
-const MS_BETWEEN_TICKS_KEY = 'simulator.msBetweenTicks';
-const DEFAULT_MS_BETWEEN_TICKS = 0;
+const CLOCK_HZ_KEY = 'simulator.clockHz';
+const MAX_HISTORY_ENTRIES = 3000;
+
+export const CLOCK_UNLIMITED = 0;
+
+export const KEYBOARD_REGISTER_ADDRESS = 0xff010000 | 0;
 
 const INITIAL_STATE: SimulatorState = {
   source: { text: '.data\n\n.text\n' },
@@ -44,6 +89,7 @@ const INITIAL_STATE: SimulatorState = {
     isHexValues: true,
     isAscii: false,
   },
+  interactiveMode: false,
 };
 
 function computeGuards(state: SimulatorState): SimulatorGuards {
@@ -120,16 +166,21 @@ export class SimulatorStore {
   public readonly canUndo$ = this.vm$.pipe(map((vm) => vm.guards.canUndo));
   public readonly canReset$ = this.vm$.pipe(map((vm) => vm.guards.canReset));
   public readonly canStop$ = this.vm$.pipe(map((vm) => vm.guards.canStop));
+  public readonly interactiveMode$ = this.state$.pipe(
+    map((state) => state.interactiveMode),
+    distinctUntilChanged(),
+  );
 
   private readonly _helpOpen = new BehaviorSubject<boolean>(false);
   readonly helpOpen$ = this._helpOpen.asObservable();
 
-  private history: HistoryEntry[] = [];
+  private readonly history = new BoundedUndoStack<HistoryEntry>(MAX_HISTORY_ENTRIES);
   private autosaveSub?: Subscription;
 
   private autosaveEnabled = true;
-  private instructionsPerTick = DEFAULT_INSTRUCTIONS_PER_TICK;
-  private msBetweenTicks = DEFAULT_MS_BETWEEN_TICKS;
+  private clockHz = CLOCK_UNLIMITED;
+  private keyboardRegisterValue = 0;
+  private keyboardRegisterVersion = 0;
 
   constructor() {
     const savedSource = localStorage.getItem(AUTOSAVE_KEY);
@@ -144,14 +195,9 @@ export class SimulatorStore {
     const savedAutosave = localStorage.getItem(AUTOSAVE_ENABLED_KEY);
     this.autosaveEnabled = savedAutosave !== 'false';
 
-    const savedInstructionsPerTick = Number(localStorage.getItem(INSTRUCTIONS_PER_TICK_KEY));
-    if (savedInstructionsPerTick > 0) {
-      this.instructionsPerTick = savedInstructionsPerTick;
-    }
-
-    const savedMsBetweenTicks = localStorage.getItem(MS_BETWEEN_TICKS_KEY);
-    if (savedMsBetweenTicks !== null) {
-      this.msBetweenTicks = Number(savedMsBetweenTicks);
+    const savedClockHz = Number(localStorage.getItem(CLOCK_HZ_KEY));
+    if (savedClockHz > 0) {
+      this.clockHz = savedClockHz;
     }
 
     this.startAutosave();
@@ -192,6 +238,7 @@ export class SimulatorStore {
       hasUndo: false,
       errorMessage: null,
       errorLine: null,
+      interactiveMode: false,
     });
   }
 
@@ -208,7 +255,7 @@ export class SimulatorStore {
   }
 
   public setSimulation(simulationStateObject: SimulatorStateObject | null): void {
-    this.history = [];
+    this.history.clear();
     this.patch({
       simulation: simulationStateObject,
       phase: simulationStateObject ? 'assembled' : 'edited',
@@ -221,11 +268,42 @@ export class SimulatorStore {
     this.patch({
       simulation: sim,
       phase: 'paused',
+      interactiveMode: false,
     });
   }
 
   public tickSimulation(simulation: SimulatorStateObject): void {
     this.patch({ simulation: simulation });
+  }
+
+  public pokeMemoryWord(address: number, value: number): void {
+    const simulation = this.subject.value.simulation;
+    if (!simulation?.riscv) {
+      return;
+    }
+
+    this.patch({
+      simulation: {
+        ...simulation,
+        riscv: {
+          ...simulation.riscv,
+          memory: { ...simulation.riscv.memory, [address | 0]: value | 0 },
+        },
+      },
+    });
+  }
+
+  public setKeyboardRegisterValue(value: number): void {
+    this.keyboardRegisterValue = value | 0;
+    this.keyboardRegisterVersion++;
+  }
+
+  public getKeyboardRegisterValue(): number {
+    return this.keyboardRegisterValue;
+  }
+
+  public getKeyboardRegisterVersion(): number {
+    return this.keyboardRegisterVersion;
   }
 
   public getSimulation(): SimulatorStateObject | null {
@@ -264,7 +342,7 @@ export class SimulatorStore {
   }
 
   public reset(): void {
-    this.history = [];
+    this.history.clear();
     this.subject.next(this.createFreshState());
   }
 
@@ -366,6 +444,10 @@ export class SimulatorStore {
     return this.subject.value.viewOptions;
   }
 
+  public setInteractiveMode(value: boolean): void {
+    this.patch({ interactiveMode: value });
+  }
+
   private createFreshState(): SimulatorState {
     return {
       source: this.subject.value.source,
@@ -382,6 +464,7 @@ export class SimulatorStore {
         isHexValues: true,
         isAscii: false,
       },
+      interactiveMode: false,
     };
   }
 
@@ -400,26 +483,17 @@ export class SimulatorStore {
     return this.autosaveEnabled;
   }
 
-  public getInstructionsPerTick(): number {
-    return this.instructionsPerTick;
+  public getClockHz(): number {
+    return this.clockHz;
   }
 
-  public setInstructionsPerTick(value: number): void {
-    this.instructionsPerTick = value;
-    localStorage.setItem(INSTRUCTIONS_PER_TICK_KEY, String(value));
-  }
-
-  public getMsBetweenTicks(): number {
-    return this.msBetweenTicks;
-  }
-
-  public setMsBetweenTicks(value: number): void {
-    this.msBetweenTicks = value;
-    localStorage.setItem(MS_BETWEEN_TICKS_KEY, String(value));
+  public setClockHz(value: number): void {
+    this.clockHz = value;
+    localStorage.setItem(CLOCK_HZ_KEY, String(value));
   }
 
   public resetAll(): void {
-    this.history = [];
+    this.history.clear();
     localStorage.removeItem(AUTOSAVE_KEY);
     this.subject.next(structuredClone(INITIAL_STATE));
   }
