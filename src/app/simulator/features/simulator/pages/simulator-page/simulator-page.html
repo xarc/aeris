@@ -1,25 +1,34 @@
 <section class="simulator">
-  <app-menu></app-menu>
+  <app-menu
+    [graphicPanelVisible]="graphicPanelVisible"
+    (toggleGraphicPanel)="onToggleGraphicPanel()"
+  ></app-menu>
 
-  <div class="vertical-split">
-    <div class="workspace" [style.flex-basis.%]="workspaceHeightPercent">
-      <div class="left">
-        <app-runtime></app-runtime>
-      </div>
-
-      <div class="right">
-        <app-registers></app-registers>
-      </div>
+  <div
+    class="workspace-grid resize-scope"
+    [class.panel-mode]="graphicPanelVisible"
+    [style.grid-template-rows]="workspaceHeightPercent + '% auto 1fr'"
+  >
+    <div class="pane-editor">
+      <app-runtime></app-runtime>
     </div>
 
-    <div class="resizer-wrapper">
+    <div class="pane-resizer">
       <div class="resizer-vertical" (pointerdown)="onVerticalResizerDown($event)">
         <div class="resizer-grip"></div>
       </div>
     </div>
 
-    <div class="console-container">
+    <div class="pane-console">
       <app-console></app-console>
+    </div>
+
+    <div class="pane-right">
+      <app-registers></app-registers>
+
+      @if (graphicPanelVisible) {
+        <app-graphic-panel></app-graphic-panel>
+      }
     </div>
   </div>
 </section>

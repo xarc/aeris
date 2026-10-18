@@ -4,4 +4,5 @@ export enum SyscallCode {
   ReadInt = 5,
   ReadString = 8,
   Exit = 10,
+  Sleep = 32,
 }
