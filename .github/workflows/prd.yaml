@@ -24,5 +24,6 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: dist/aeris/browser
-          branch: prod  
+          branch: prod
+          clean-exclude: develop
           token: ${{ secrets.GIT_TOKEN }}
