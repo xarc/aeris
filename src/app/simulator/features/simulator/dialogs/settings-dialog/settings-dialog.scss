@@ -199,6 +199,23 @@ button {
   flex-shrink: 0;
 }
 
+.text-input {
+  width: 140px;
+  margin-right: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-family: $font-mono-ui;
+  font-size: 12px;
+  color: $t6;
+  background: $s2;
+  border: 1px solid $s4;
+  outline: none;
+
+  &:focus {
+    border-color: $p2;
+  }
+}
+
 .dialog-footer {
   display: flex;
   align-items: center;

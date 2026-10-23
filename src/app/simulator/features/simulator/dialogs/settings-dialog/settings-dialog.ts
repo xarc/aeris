@@ -5,10 +5,11 @@ import {
   CLOCK_UNLIMITED,
   SimulatorStore,
 } from '../../../../core/state/simulator.store/simulator.store';
+import { DisplayLinkAdapter } from '../../../../core/adapters/display-link.adapter/display-link.adapter';
 import { ThemeService } from '../../../../core/theme/theme-service';
 import { Theme } from '../../../../core/theme/theme.types';
 
-type Tab = 'editor' | 'performance' | 'about';
+type Tab = 'editor' | 'performance' | 'display' | 'about';
 
 @Component({
   selector: 'app-settings-dialog',
@@ -21,9 +22,12 @@ export class SettingsDialog implements OnInit {
     public dialogRef: MatDialogRef<SettingsDialog>,
     private store: SimulatorStore,
     private themeService: ThemeService,
+    private displayLink: DisplayLinkAdapter,
   ) {
     this.autosave = this.store.isAutosaveEnabled();
     this.selectedClockHz = this.store.getClockHz();
+    this.displayLinkEnabled = this.displayLink.isEnabledSetting();
+    this.displayLinkAddress = this.displayLink.getAddress();
   }
 
   version = packageJson.version;
@@ -42,6 +46,12 @@ export class SettingsDialog implements OnInit {
     { label: 'Dark', value: 'dark' },
     { label: 'Light', value: 'light' },
   ];
+
+  displayLinkEnabled = false;
+
+  displayLinkAddress = '';
+
+  displayLinkTestStatus: 'idle' | 'testing' | 'ok' | 'failed' = 'idle';
 
   selectedClockHz = CLOCK_UNLIMITED;
 
@@ -86,9 +96,25 @@ export class SettingsDialog implements OnInit {
     this.selectedClockHz = Number(value);
   }
 
+  onDisplayLinkEnabledChange(value: boolean): void {
+    this.displayLinkEnabled = value;
+  }
+
+  onDisplayLinkAddressInput(event: Event): void {
+    this.displayLinkAddress = (event.target as HTMLInputElement).value;
+    this.displayLinkTestStatus = 'idle';
+  }
+
+  async testDisplayLink(): Promise<void> {
+    this.displayLinkTestStatus = 'testing';
+    const ok = await this.displayLink.test(this.displayLinkAddress);
+    this.displayLinkTestStatus = ok ? 'ok' : 'failed';
+  }
+
   saveSettings(): void {
     this.store.setAutosaveEnabled(this.autosave);
     this.store.setClockHz(this.selectedClockHz);
+    this.displayLink.configure(this.displayLinkEnabled, this.displayLinkAddress);
     this.themeService.setTheme(this.selectedTheme as Theme);
 
     this.dialogRef.close({

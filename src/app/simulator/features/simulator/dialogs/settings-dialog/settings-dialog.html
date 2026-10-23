@@ -25,6 +25,14 @@
           <mat-icon class="nav-ico">speed</mat-icon>
           <span class="nav-text">Performance</span>
         </button>
+        <button
+          class="nav-btn"
+          [class.active]="activeTab === 'display'"
+          (click)="switchTab('display')"
+        >
+          <mat-icon class="nav-ico">developer_board</mat-icon>
+          <span class="nav-text">Display</span>
+        </button>
         <button class="nav-btn" [class.active]="activeTab === 'about'" (click)="switchTab('about')">
           <mat-icon class="nav-ico">info_outline</mat-icon>
           <span class="nav-text">About</span>
@@ -165,6 +173,66 @@
                 ></app-select>
               </div>
             </div>
+          </div>
+        </div>
+
+        <div class="tab-panel" [class.active]="activeTab === 'display'">
+          <div class="section-group">
+            <span class="section-label">ESP32 display (experimental)</span>
+
+            <div class="setting-row">
+              <div class="setting-label">
+                <span class="name">Send to ESP32 display</span>
+                <span class="desc">Mirror the graphic panel to the board over Wi-Fi</span>
+              </div>
+
+              <div class="setting-control">
+                <app-toggle
+                  [checked]="displayLinkEnabled"
+                  (checkedChange)="onDisplayLinkEnabledChange($event)"
+                ></app-toggle>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-label">
+                <span class="name">Device address</span>
+                <span class="desc">IP shown on the board screen, e.g. 192.168.0.50</span>
+              </div>
+
+              <div class="setting-control">
+                <input
+                  class="text-input"
+                  type="text"
+                  placeholder="192.168.0.50"
+                  [value]="displayLinkAddress"
+                  (input)="onDisplayLinkAddressInput($event)"
+                />
+                <button
+                  class="btn-cancel"
+                  [disabled]="displayLinkAddress.trim() === '' || displayLinkTestStatus === 'testing'"
+                  (click)="testDisplayLink()"
+                >
+                  Test
+                </button>
+              </div>
+            </div>
+
+            @if (displayLinkTestStatus !== 'idle') {
+              <span class="desc">
+                @switch (displayLinkTestStatus) {
+                  @case ('testing') {
+                    Testing...
+                  }
+                  @case ('ok') {
+                    Connected. A green square should appear on the board.
+                  }
+                  @case ('failed') {
+                    Could not reach the board. Check the IP, and that Aeris is served over http (localhost).
+                  }
+                }
+              </span>
+            }
           </div>
         </div>
 

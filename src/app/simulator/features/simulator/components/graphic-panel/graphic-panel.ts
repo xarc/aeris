@@ -9,6 +9,10 @@ import {
   ViewChild,
 } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
+import {
+  DisplayCell,
+  DisplayLinkAdapter,
+} from '../../../../core/adapters/display-link.adapter/display-link.adapter';
 import { SimulatorFacade } from '../../../../core/state/simulator.facade/simulator.facade';
 import { SimulatorStore } from '../../../../core/state/simulator.store/simulator.store';
 
@@ -34,6 +38,7 @@ export class GraphicPanelComponent implements OnInit, AfterViewInit, OnDestroy {
   interactiveMode = false;
 
   private pixels: string[][] = this.buildFramebufferGrid({});
+  private linkedPixels: string[][] | null = null;
   private readonly heldKeyCodes: number[] = [];
   private heldKeyIntervalId: ReturnType<typeof setInterval> | null = null;
   private readonly destroy$ = new Subject<void>();
@@ -42,12 +47,14 @@ export class GraphicPanelComponent implements OnInit, AfterViewInit, OnDestroy {
     private readonly store: SimulatorStore,
     private readonly facade: SimulatorFacade,
     private readonly changeDetectorRef: ChangeDetectorRef,
+    private readonly displayLink: DisplayLinkAdapter,
   ) {}
 
   ngOnInit(): void {
     this.store.state$.pipe(takeUntil(this.destroy$)).subscribe((state) => {
       const memory = state.simulation?.riscv?.memory ?? {};
       this.pixels = this.buildFramebufferGrid(memory);
+      this.mirrorToDisplayLink();
       this.changeDetectorRef.markForCheck();
     });
   }
@@ -147,6 +154,27 @@ export class GraphicPanelComponent implements OnInit, AfterViewInit, OnDestroy {
 
     clearInterval(this.heldKeyIntervalId);
     this.heldKeyIntervalId = null;
+  }
+
+  private mirrorToDisplayLink(): void {
+    if (!this.displayLink.isEnabled()) {
+      this.linkedPixels = null;
+      return;
+    }
+
+    const changes: DisplayCell[] = [];
+
+    for (let y = 0; y < FRAMEBUFFER_ROWS; y++) {
+      for (let x = 0; x < FRAMEBUFFER_COLUMNS; x++) {
+        const color = this.pixels[y][x];
+        if (this.linkedPixels === null || this.linkedPixels[y][x] !== color) {
+          changes.push({ x, y, color });
+        }
+      }
+    }
+
+    this.linkedPixels = this.pixels;
+    this.displayLink.enqueue(changes);
   }
 
   private pixelToAddress(x: number, y: number): number {
