@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component } from '@angular/core';
 import { ConsolePort } from '../../../../core/ports/console.port/console.port';
 import { SimulatorFacade } from '../../../../core/state/simulator.facade/simulator.facade';
 
@@ -9,9 +9,6 @@ import { SimulatorFacade } from '../../../../core/state/simulator.facade/simulat
   styleUrl: './menu.scss',
 })
 export class Menu {
-  @Input() graphicPanelVisible = false;
-  @Output() toggleGraphicPanel = new EventEmitter<void>();
-
   constructor(
     private readonly console: ConsolePort,
     private readonly facade: SimulatorFacade,

@@ -31,7 +31,6 @@ export interface SimulatorState {
   errorLine: number | null;
   selectedTabIndex: number;
   viewOptions: ViewOptions;
-  interactiveMode: boolean;
 }
 
 export interface SimulatorGuards {

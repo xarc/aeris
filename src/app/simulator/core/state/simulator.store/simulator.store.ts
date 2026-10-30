@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, distinctUntilChanged, map, interval, Subscription } from 'rxjs';
+import { BehaviorSubject, map, interval, Subscription } from 'rxjs';
 import {
   SimulatorState,
   SimulatorGuards,
@@ -72,8 +72,6 @@ const MAX_HISTORY_ENTRIES = 3000;
 
 export const CLOCK_UNLIMITED = 0;
 
-export const KEYBOARD_REGISTER_ADDRESS = 0xff010000 | 0;
-
 const INITIAL_STATE: SimulatorState = {
   source: { text: '.data\n\n.text\n' },
   phase: 'idle',
@@ -89,7 +87,6 @@ const INITIAL_STATE: SimulatorState = {
     isHexValues: true,
     isAscii: false,
   },
-  interactiveMode: false,
 };
 
 function computeGuards(state: SimulatorState): SimulatorGuards {
@@ -166,10 +163,6 @@ export class SimulatorStore {
   public readonly canUndo$ = this.vm$.pipe(map((vm) => vm.guards.canUndo));
   public readonly canReset$ = this.vm$.pipe(map((vm) => vm.guards.canReset));
   public readonly canStop$ = this.vm$.pipe(map((vm) => vm.guards.canStop));
-  public readonly interactiveMode$ = this.state$.pipe(
-    map((state) => state.interactiveMode),
-    distinctUntilChanged(),
-  );
 
   private readonly _helpOpen = new BehaviorSubject<boolean>(false);
   readonly helpOpen$ = this._helpOpen.asObservable();
@@ -179,8 +172,6 @@ export class SimulatorStore {
 
   private autosaveEnabled = true;
   private clockHz = CLOCK_UNLIMITED;
-  private keyboardRegisterValue = 0;
-  private keyboardRegisterVersion = 0;
 
   constructor() {
     const savedSource = localStorage.getItem(AUTOSAVE_KEY);
@@ -238,7 +229,6 @@ export class SimulatorStore {
       hasUndo: false,
       errorMessage: null,
       errorLine: null,
-      interactiveMode: false,
     });
   }
 
@@ -268,42 +258,11 @@ export class SimulatorStore {
     this.patch({
       simulation: sim,
       phase: 'paused',
-      interactiveMode: false,
     });
   }
 
   public tickSimulation(simulation: SimulatorStateObject): void {
     this.patch({ simulation: simulation });
-  }
-
-  public pokeMemoryWord(address: number, value: number): void {
-    const simulation = this.subject.value.simulation;
-    if (!simulation?.riscv) {
-      return;
-    }
-
-    this.patch({
-      simulation: {
-        ...simulation,
-        riscv: {
-          ...simulation.riscv,
-          memory: { ...simulation.riscv.memory, [address | 0]: value | 0 },
-        },
-      },
-    });
-  }
-
-  public setKeyboardRegisterValue(value: number): void {
-    this.keyboardRegisterValue = value | 0;
-    this.keyboardRegisterVersion++;
-  }
-
-  public getKeyboardRegisterValue(): number {
-    return this.keyboardRegisterValue;
-  }
-
-  public getKeyboardRegisterVersion(): number {
-    return this.keyboardRegisterVersion;
   }
 
   public getSimulation(): SimulatorStateObject | null {
@@ -444,10 +403,6 @@ export class SimulatorStore {
     return this.subject.value.viewOptions;
   }
 
-  public setInteractiveMode(value: boolean): void {
-    this.patch({ interactiveMode: value });
-  }
-
   private createFreshState(): SimulatorState {
     return {
       source: this.subject.value.source,
@@ -464,7 +419,6 @@ export class SimulatorStore {
         isHexValues: true,
         isAscii: false,
       },
-      interactiveMode: false,
     };
   }
 

@@ -1,12 +1,8 @@
 <section class="simulator">
-  <app-menu
-    [graphicPanelVisible]="graphicPanelVisible"
-    (toggleGraphicPanel)="onToggleGraphicPanel()"
-  ></app-menu>
+  <app-menu></app-menu>
 
   <div
     class="workspace-grid resize-scope"
-    [class.panel-mode]="graphicPanelVisible"
     [style.grid-template-rows]="workspaceHeightPercent + '% auto 1fr'"
   >
     <div class="pane-editor">
@@ -25,10 +21,6 @@
 
     <div class="pane-right">
       <app-registers></app-registers>
-
-      @if (graphicPanelVisible) {
-        <app-graphic-panel></app-graphic-panel>
-      }
     </div>
   </div>
 </section>

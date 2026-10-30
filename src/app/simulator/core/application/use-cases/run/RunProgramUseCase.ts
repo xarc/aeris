@@ -1,13 +1,8 @@
 import { Injectable, NgZone } from '@angular/core';
 import { BatchWait, ExecutionEngine } from '../../../domain/riscv/ExecutionEngine';
 import { SimulationRunner } from '../../../domain/simulation/SimulationRunner';
-import { SimulatorStateObject } from '../../../domain/shared/types';
 import { SyscallPort } from '../../../ports/syscall.port/syscall.port';
-import {
-  CLOCK_UNLIMITED,
-  KEYBOARD_REGISTER_ADDRESS,
-  SimulatorStore,
-} from '../../../state/simulator.store/simulator.store';
+import { CLOCK_UNLIMITED, SimulatorStore } from '../../../state/simulator.store/simulator.store';
 
 const AUTO_CHUNK_MIN = 300;
 const AUTO_CHUNK_MAX = 20000;
@@ -56,7 +51,6 @@ export class RunProgramUseCase {
 
     let currentState = simulation;
     let animationFramePending = false;
-    let lastObservedKeyboardVersion = this.store.getKeyboardRegisterVersion();
     let autoChunk = AUTO_CHUNK_MIN;
     let clockBudget = 0;
     let lastClockTime = performance.now();
@@ -110,15 +104,6 @@ export class RunProgramUseCase {
             this.store.setHasUndo(this.store.hasHistory());
           });
           return;
-        }
-
-        const externalKeyboardVersion = this.store.getKeyboardRegisterVersion();
-        if (externalKeyboardVersion !== lastObservedKeyboardVersion) {
-          currentState = this.withKeyboardRegister(
-            currentState,
-            this.store.getKeyboardRegisterValue(),
-          );
-          lastObservedKeyboardVersion = externalKeyboardVersion;
         }
 
         let chunkSize: number;
@@ -246,20 +231,6 @@ export class RunProgramUseCase {
     if (riscv.pc >= endPc || riscv.halted) {
       this.store.setEndReached(true);
     }
-  }
-
-  private withKeyboardRegister(state: SimulatorStateObject, value: number): SimulatorStateObject {
-    if (!state.riscv) {
-      return state;
-    }
-
-    return {
-      ...state,
-      riscv: {
-        ...state.riscv,
-        memory: { ...state.riscv.memory, [KEYBOARD_REGISTER_ADDRESS]: value | 0 },
-      },
-    };
   }
 
   undo(): void {

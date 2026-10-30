@@ -31,14 +31,6 @@
   overflow-y: hidden;
 }
 
-.workspace-grid.panel-mode {
-  grid-template-columns: minmax(640px, 1fr) 460px;
-  grid-template-areas:
-    'editor right'
-    'resizer right'
-    'console right';
-}
-
 .pane-editor {
   grid-area: editor;
   min-height: 0;
@@ -71,21 +63,9 @@
   overflow: hidden;
 }
 
-.workspace-grid.panel-mode .pane-right {
-  grid-area: right;
-}
-
 .pane-right app-registers {
-  flex: 1 1 0;
-  min-height: 0;
-}
-
-.workspace-grid:not(.panel-mode) .pane-right app-registers {
   flex: 1 1 auto;
-}
-
-.pane-right app-graphic-panel {
-  flex: 0 0 auto;
+  min-height: 0;
 }
 
 app-console {

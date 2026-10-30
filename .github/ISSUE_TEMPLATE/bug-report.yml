@@ -11,7 +11,6 @@ body:
         - Editor
         - Assembler / analyzer (errors, encoding, directives)
         - Execution (Run, Step, Undo)
-        - Graphic panel / Interactive mode
         - Settings
         - Something else
     validations:

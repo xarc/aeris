@@ -14,12 +14,6 @@ export class SimulatorPage {
   minimumWorkspacePercent = 30;
   maximumWorkspacePercent = 85;
 
-  graphicPanelVisible = false;
-
-  onToggleGraphicPanel(): void {
-    this.graphicPanelVisible = !this.graphicPanelVisible;
-  }
-
   onVerticalResizerDown(event: PointerEvent) {
     event.preventDefault();
 
