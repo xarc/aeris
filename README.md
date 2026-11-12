@@ -1,4 +1,4 @@
-# ÆRIS - Advanced Educational RISC-V Interactive Simulator
+# ÆRIS - Advanced Educational RISC-V Simulator
 
 [![Deploy](https://github.com/xarc/aeris/actions/workflows/prd.yaml/badge.svg)](https://github.com/xarc/aeris/actions/workflows/prd.yaml)
 ![GitHub repo size](https://img.shields.io/github/repo-size/xarc/aeris?label=Repo%20Size)

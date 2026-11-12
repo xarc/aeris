@@ -34,7 +34,12 @@
               {
                 "glob": "**/*",
                 "input": "node_modules/monaco-editor/min",
-                "output": "assets/monaco"
+                "output": "assets/monaco",
+                "ignore": [
+                  "vs/language/**",
+                  "vs/basic-languages/**",
+                  "vs/nls.messages.*.js"
+                ]
               }
             ],
             "styles": ["src/styles.scss"],
